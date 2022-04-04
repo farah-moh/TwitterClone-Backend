@@ -1,9 +1,12 @@
 const express = require('express');
-const router = express.Router();
 const AppError = require('./../utils/appError');
 const authenticationController = require('./../controllers/authentication');
 
+const router = express.Router();
+
 router.post('/signup', authenticationController.signUp);
+router.post('/signup-confirm/:token', authenticationController.signUpConfirmed);
+
 router.post('/login', authenticationController.login);
 //router.get('/logout', authenticationController.logout);
 // router.get(
