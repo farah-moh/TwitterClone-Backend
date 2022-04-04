@@ -5,7 +5,9 @@ const AppError = require('./utils/appError')
 const authenticationRoute = require('./routes/authenticationRoute')
 require('dotenv').config();
 
+
 app.use('/', authenticationRoute);
+
 
 app.all('*', (req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404))
