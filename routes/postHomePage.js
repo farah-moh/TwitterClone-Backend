@@ -1,11 +1,12 @@
 const router = require('express').Router()
 
+
 const {
-    createTweet
+    postTweet
 } = require ('../controllers/homePage');
 
 
-router.post('/compose-tweet', createTweet);
+router.post('/compose-tweet', postTweet);
 
 
 module.exports = router;

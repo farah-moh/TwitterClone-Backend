@@ -6,24 +6,27 @@ const tweet = require('../models/tweet');
 
 exports.postTweet = async(req, res)=>{
     const {body, media} = req.body;
-    if(!body && body.trim().length === 0 && !media){
+    if(!body&& !media){
         return res.status(422).json({error: "Please enter data to post the tweet!"});
     }
     
     try{
         let createTweet = new tweet({
-            media,
-            body, 
-            user: req.userId
+            //media,
+            body,
+            //user: req.userId
             
         });
-        const saveTweet = await createTweet.save();
+        await createTweet.save();
+        return res.status(200).json({succes: "true"})
     }
     catch (err) {
         console.log(err)
         return res.status(500).json({error:"Something went wrong"})
     }
+
     
 
 }
+
 
