@@ -22,6 +22,7 @@ const loadChat= async (body,id)=> {
 return chat;
 }
 
+//edit message
 exports.sendMessage= catchAsync(async (req, res, next) => {
     const newMessage= await createMessage(req.body,req.user.id);
     res.status(200).json({status: 'Success', success: true});
