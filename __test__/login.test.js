@@ -30,7 +30,8 @@ describe('Login function', () => {
         birthdate: '2001-9-12',
         country: 'Egypt',
         city: 'Cairo',
-        confirmed: 'true'
+        confirmed: 'true',
+        confirmEmailToken: 'true'
        })
        await validUser.save();
 
