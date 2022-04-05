@@ -27,15 +27,16 @@ exports.signUp = catchAsync(async (req, res, next) => {
     const newUser = await createUser(req.body); 
 
     const emailConfirmationToken = await newUser.generateEmailConfirmToken();
+
     const confirmEmailText = 
     `Click this link to confirm your email\n
-    http://localhost:${process.env.PORT}/signup-confirm/${emailConfirmationToken}\n`
+    http://localhost:${process.env.PORT}/signup-confirm/${emailConfirmationToken}\n`;
 
     try {
       await sendEmail({
         email: newUser.email,
         subject: `Account Confirmation Token ${confirmEmailText}`,
-        confirmEmailText
+        message: confirmEmailText
       });
       res.status(200).json({
         status: 'success',
@@ -64,14 +65,15 @@ exports.signUpConfirmed = catchAsync(async (req, res, next) => {
 
     const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
 
-    const newUser = await user.findOne({emailConfirmationToken: hashedToken} );
-    if (!newUser) return next(new AppError(`Token is invalid or has expired`, 400));
 
-    newUser.confirmEmailToken = undefined;
-    newUser.confirmed = true;
-    await newUser.save();
+    const currUser = await user.findOne({confirmEmailToken: hashedToken} );
+    if (!currUser) return next(new AppError(`Token is invalid or has expired`, 400));
+
+    currUser.confirmEmailToken = undefined;
+    currUser.confirmed = true;
+    await currUser.save();
     
-    const tempID = newUser._id;
+    const tempID = currUser._id;
 
     const token = jwt.sign({tempID}, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
 
@@ -81,7 +83,7 @@ exports.signUpConfirmed = catchAsync(async (req, res, next) => {
         expireDate: process.env.JWT_EXPIRE_IN,
         token,
         // data: {
-        //   newUser
+        //   currUser
         // }
       })
   

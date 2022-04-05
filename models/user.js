@@ -175,7 +175,7 @@ userSchema.methods.generateEmailConfirmToken = async function () {
         }
     }
     await this.save({
-      //validateBeforeSave: false
+      validateBeforeSave: false
     });
     return cofirmToken;
 }
