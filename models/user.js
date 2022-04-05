@@ -162,7 +162,7 @@ userSchema.methods.generateEmailConfirmToken = async function () {
     while(!ok) {
         //generate token
         cofirmToken = crypto.randomBytes(32).toString('hex');
-        this.confirmEmailToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+        this.confirmEmailToken = crypto.createHash('sha256').update(cofirmToken).digest('hex');
 
         //check if it exists before
         const isUnique = await this.model('user').find({
