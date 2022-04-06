@@ -16,12 +16,13 @@ const createMessage= async (body,receiverId)=> {
 return newMessage;
 }
 
-const loadChat= async body=> {
+const loadChat= async (body,receiverId)=> {
+    
      const chat= await message.find({
      $or:[
      {sender: body.sender,
-      receiver: body.receiver},
-     {sender: body.receiver,
+      receiver: receiverId},
+     {sender: receiverId,
       receiver: body.sender}
      ]
      });
@@ -40,7 +41,7 @@ exports.sendMessage= catchAsync(async (req, res, next) => {
     }
 
     try {
-        const receiver = await user.findById(req.params.receiver_id)
+        const receiver = await user.findById(req.params.receiver_id);
         if (!receiver) {
             return next(new AppError('User not found', 404));
         }
@@ -57,24 +58,24 @@ exports.sendMessage= catchAsync(async (req, res, next) => {
 });
 
 exports.chat= catchAsync(async (req, res, next) => {
-
+    
     try {
-        const receiver = await user.findById(req.params.receiver_id)
+        const receiver = await user.findById(req.params.receiver_id);
         if (!receiver) {
             return next(new AppError('User not found', 404));
         }
-
-    const chat= await loadChat(req.body,req.params.receiver_id);
+        
+    const chat= await loadChat(req.body, req.params.receiver_id);
     res.status(200).json({status: 'Success', success: true, chat});
     }
 
     catch (err) {
         console.log(err)
         return res.status(500).json({error:"Something went wrong"})
-      }
+    }
 });
 
 exports.deleteMessage= catchAsync(async (req, res, next) => {
-    await message.deleteOne({_id: req.body._id});
+    await message.findByIdAndRemove ( req.body._id);
     res.status(200).json({status: 'Success', success: true});
 });
