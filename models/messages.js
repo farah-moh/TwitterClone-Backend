@@ -1,12 +1,11 @@
-const mongoose=require ('mongoose')
-const Schema=mongoose.Schema()
-const messageSchema=new Schema({
+const mongoose = require ('mongoose');
+const Schema = mongoose.Schema;
+const messageSchema = new Schema({
 
     text: {
         type: String,
         minLength: 1,
         trim: true
-        //required
     },
 
     media: {
@@ -15,13 +14,13 @@ const messageSchema=new Schema({
     },
 
     sender: {
-        type: Schema.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "user",
         required: true
      },
 
     receiver: {
-        type: Schema.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "user",
         required: true
      },
@@ -29,11 +28,12 @@ const messageSchema=new Schema({
     createdAt: {
         type: Date,
         default: Date.now(),
-        required: true
 
      }
-})
+},
+    {timestamps: true},
+);
 
-const message=mongoose.model('message',messageSchema)
+const messages=mongoose.model('message',messageSchema);
 
-module.exports = message;
+module.exports = messages;
