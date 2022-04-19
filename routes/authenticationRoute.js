@@ -10,7 +10,7 @@ router.post('/signup', authenticationController.signUp);
 router.post('/signup-confirm/:token', authenticationController.signUpConfirmed);
 
 router.post('/login', authenticationController.login);
-router.post('/facebook', passport.authenticate('facebook-token', { session: false }), authController.loginWithFacebook)
+router.post('/facebook', passport.authenticate('facebook-token', { session: false }), authenticationController.loginWithFacebook)
 //router.get('/logout', authenticationController.logout);
 // router.get(
 //   '/token',
