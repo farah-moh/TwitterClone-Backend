@@ -9,6 +9,10 @@ const sendEmail = require('./../utils/email_info');
 
 //Sign Up Services + Route Handlers
 
+const signToken = id => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE })
+}
+
 const createUser = async body => {
     const newUser = await user.create({
         username: body.username,
@@ -73,14 +77,12 @@ exports.signUpConfirmed = catchAsync(async (req, res, next) => {
     currUser.confirmed = true;
     await currUser.save();
     
-    const tempID = currUser._id;
-
-    const token = jwt.sign({tempID}, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
+    const token = signToken(currUser._id);
 
     res.status(200).json({
         status: 'Success',
         success: true,
-        expireDate: process.env.JWT_EXPIRE_IN,
+        expireDate: process.env.JWT_EXPIRE,
         token,
         // data: {
         //   currUser
@@ -118,15 +120,24 @@ exports.login = catchAsync(async (req, res, next) => {
     //EMAIL NOT CONFIRMED
     if (!User.confirmed) return next(new AppError('Please confirm your email.',400)); // understand
 
-    const tempID = User._id;
-
-    //Send the new User in the response.
-    const token = jwt.sign({tempID}, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
+    ////Send the new User in the response.
+    const token = signToken(User._id);
 
     res.status(200).json({
     status: 'Success',
     success: true,
-    expireDate: process.env.JWT_EXPIRE_IN,
+    expireDate: process.env.JWT_EXPIRE,
     token
     })
   });
+
+  exports.loginWithFacebook = catchAsync(async (req, res, next) => {
+    const token = signToken(req.user_id);
+
+    res.status(200).json({
+      status: 'Success',
+      success: true,
+      expireDate: process.env.JWT_EXPIRE,
+      token
+      })
+  })

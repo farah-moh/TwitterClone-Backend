@@ -29,7 +29,7 @@ const userSchema = new Schema({
         required: [true, 'Username is required.'],
         trim: true,
         minLength: 1,
-        maxLength: 25
+        //maxLength: 25
         // validate: {
         //     validator: function (v) {
         //       return /^\S*$/i.test(v);
@@ -48,6 +48,9 @@ const userSchema = new Schema({
 
     passwordResetToken: String,
     passwordResetTokenExpiry: Date,
+
+    facebookID: String,
+    googleID: String,
 
     birthdate: {
         type: Date,
