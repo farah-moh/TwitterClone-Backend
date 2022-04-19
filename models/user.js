@@ -40,7 +40,7 @@ const userSchema = new Schema({
 
     password: {
         type: String,
-        required: [true, 'Password is required.'],
+        //required: [true, 'Password is required.'],
         trim: true,
         minLength: 8,
         maxLength: 64
@@ -111,6 +111,11 @@ const userSchema = new Schema({
     notificationFlag: {
         type: Boolean,
         default: true
+    },
+
+    theme: {
+        type: String,
+        enum: {values: ['light', 'dark']}
     }
 
 },
@@ -154,7 +159,7 @@ userSchema.methods.generatePasswordResetToken = async function () {
     }
     this.passwordResetTokenExpiry = Date.now() + 7 * 60 * 1000;
     await this.save({
-      //validateBeforeSave: false
+      validateBeforeSave: false
     });
     return resetToken;
 }
