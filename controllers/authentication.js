@@ -218,7 +218,7 @@ const resetPassword = async (token, password) => {
   };
 exports.resetPassword = resetPassword;
 
-const changePassword = async (id, password, newPassword) => {
+const changePasswordFunc = async (id, password, newPassword) => {
   const User = await user.findOne({_id: id});
 
   if (!User) throw new AppError('Invalid User', 400);
@@ -227,7 +227,18 @@ const changePassword = async (id, password, newPassword) => {
     throw new AppError('Incorrect password', 401);
 
   User.password = newPassword;
-  await User.save();
   return User;
 };
-exports.changePassword = changePassword;
+exports.changePasswordFunc = changePasswordFunc;
+
+exports.changePassword = catchAsync(async (req, res, next) => {
+  const User = await updatePassword(
+    req.user._id,
+    req.body.password,
+    req.body.newPassword,
+  );
+  await User.save();
+  res.status(200).json({
+    status: 'Success'
+  })
+});
