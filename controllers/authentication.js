@@ -6,7 +6,6 @@ const AppError = require('../utils/appError');
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
 const sendEmail = require('./../utils/email_info');
-const user = require('../models/user');
 
 //Sign Up Services + Route Handlers
 
@@ -217,7 +216,7 @@ const resetPassword = async (token, password) => {
   
     return user;
   };
-exports.resetPasswordService = resetPassword;
+exports.resetPassword = resetPassword;
 
 const changePassword = async (id, password, newPassword) => {
   const User = await user.findOne({_id: id});
