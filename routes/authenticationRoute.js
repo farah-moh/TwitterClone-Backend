@@ -1,13 +1,21 @@
 const express = require('express');
 const AppError = require('./../utils/appError');
 const authenticationController = require('./../controllers/authentication');
+const passportConfig = require('../config/passport');
+const passport = require('passport');
 
 const router = express.Router();
 
 router.post('/signup', authenticationController.signUp);
-router.post('/signup-confirm/:token', authenticationController.signUpConfirmed);
+router.patch('/signup-confirm/:token', authenticationController.signUpConfirmed);
 
 router.post('/login', authenticationController.login);
+router.post('/facebook', passport.authenticate('facebook-token', { session: false }), authenticationController.loginWithFacebook)
+
+router.post('/forgot-password', authenticationController.forgotPassword);
+router.patch('/reset-password/:token', authenticationController.resetPassword);
+router.patch('/change-password', authenticationController.changePassword);
+
 //router.get('/logout', authenticationController.logout);
 // router.get(
 //   '/token',

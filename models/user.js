@@ -29,7 +29,7 @@ const userSchema = new Schema({
         required: [true, 'Username is required.'],
         trim: true,
         minLength: 1,
-        maxLength: 25
+        //maxLength: 25
         // validate: {
         //     validator: function (v) {
         //       return /^\S*$/i.test(v);
@@ -40,7 +40,7 @@ const userSchema = new Schema({
 
     password: {
         type: String,
-        required: [true, 'Password is required.'],
+        //required: [true, 'Password is required.'],
         trim: true,
         minLength: 8,
         maxLength: 64
@@ -48,6 +48,9 @@ const userSchema = new Schema({
 
     passwordResetToken: String,
     passwordResetTokenExpiry: Date,
+
+    facebookID: String,
+    googleID: String,
 
     birthdate: {
         type: Date,
@@ -108,6 +111,11 @@ const userSchema = new Schema({
     notificationFlag: {
         type: Boolean,
         default: true
+    },
+
+    theme: {
+        type: String,
+        enum: {values: ['light', 'dark']}
     }
 
 },
@@ -151,7 +159,7 @@ userSchema.methods.generatePasswordResetToken = async function () {
     }
     this.passwordResetTokenExpiry = Date.now() + 7 * 60 * 1000;
     await this.save({
-      //validateBeforeSave: false
+      validateBeforeSave: false
     });
     return resetToken;
 }
