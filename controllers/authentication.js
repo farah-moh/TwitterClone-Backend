@@ -195,7 +195,7 @@ const sendForgotPasswordToken = async email => {
   };
   exports.sendForgotPasswordToken = sendForgotPasswordToken;
 
-const resetPassword = async (token, password) => {
+const resetPasswordFunc = async (token, password) => {
     const hashedToken = crypto
       .createHash('SHA256')
       .update(token)
@@ -217,7 +217,26 @@ const resetPassword = async (token, password) => {
   
     return user;
   };
-exports.resetPasswordService = resetPassword;
+exports.resetPasswordFunc = resetPasswordFunc;
+
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  if (!req.body.password)
+    return next(
+      new AppError(
+        'Please send a password and a passwordConfirm in the request body.', 400
+      )
+    );
+
+  const User = await resetPassword(
+    req.params.token,
+    req.body.password
+  );
+
+  await User.save();
+  res.status(200).json({
+    status: 'Success'
+  })
+});
 
 const changePasswordFunc = async (id, password, newPassword) => {
   const User = await user.findOne({_id: id});
