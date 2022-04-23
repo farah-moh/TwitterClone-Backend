@@ -279,7 +279,7 @@ const protectService = async req => {
   }
 
   if (!token) {
-    return next(new AppError('You are not logged in! Please log in to access.', 401))
+    throw new AppError('You are not logged in! Please log in to access.', 401);
   }
 
   //verifying token
@@ -289,7 +289,7 @@ const protectService = async req => {
   const foundUser = await user.findById(verified.id);
   
   if(!foundUser) {
-    return next(new AppError('The user belonging to this token no longer exists', 401))
+    throw new AppError('The user belonging to this token no longer exists', 401);
   }
   req.user = foundUser;
 };

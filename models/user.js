@@ -150,6 +150,7 @@ const userSchema = new Schema({
     },
     bio: {
         type: String,
+        default: "",
         maxLength: 160
     },
     website: {

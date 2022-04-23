@@ -4,12 +4,13 @@ app.use(express.json())
 const AppError = require('./utils/appError')
 const authenticationRoute = require('./routes/authenticationRoute')
 const messagesRoute= require("./routes/messagesRoute");
+const settings = require('./routes/settingsRoute');
 require('dotenv').config();
 const homePage = require('./routes/postHomePage')
 
 app.use('/', authenticationRoute);
 app.use('/home', homePage);
-
+app.use('/settings', settings);
 
 app.use('/', authenticationRoute);
 app.use('/messages/:receiver_id', messagesRoute);
