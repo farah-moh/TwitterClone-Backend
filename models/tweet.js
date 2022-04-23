@@ -15,9 +15,13 @@ const tweetSchema = new Schema({
         maxLength: 280,
         trim: true
     },
+    isReply:{
+        type: Boolean,
+        default: false
+    },
 
     media: {
-        type: String,
+        type: [String],
         default: null
     },
 
