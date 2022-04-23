@@ -124,6 +124,11 @@ const userSchema = new Schema({
         default: null
     },
 
+    headerImage: {
+        type: [String],
+        default: null
+    },
+
     city: {
         type: String,
         default: null
@@ -142,6 +147,14 @@ const userSchema = new Schema({
     theme: {
         type: String,
         enum: {values: ['light', 'dark']}
+    },
+    bio: {
+        type: String,
+        maxLength: 160
+    },
+    website: {
+        type: String,
+        validate: [validator.isURL, 'URL is invalid.'],
     }
 
 },

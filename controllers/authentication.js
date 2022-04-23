@@ -263,3 +263,38 @@ exports.changePassword = catchAsync(async (req, res, next) => {
     status: 'Success'
   })
 });
+
+/* Services */
+
+/**
+ * @description Protect middleware
+ * @param {Object} req Request object.
+ */
+
+const protectService = async req => {
+  let token = null;
+  //getting token from header & removing bearer
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    return next(new AppError('You are not logged in! Please log in to access.', 401))
+  }
+
+  //verifying token
+  const verified = await promisify(jwt.verify)(token, process.env.JWT_SECRET) // error handling
+
+  //finding user from token
+  const foundUser = await user.findById(verified.id);
+  
+  if(!foundUser) {
+    return next(new AppError('The user belonging to this token no longer exists', 401))
+  }
+  req.user = foundUser;
+};
+
+exports.protect = catchAsync(async (req, res, next) => {
+  await protectService(req);
+  next();
+});
