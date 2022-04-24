@@ -11,10 +11,11 @@ const sendEmail = require('./../utils/email_info');
 
 const getProfile = async (userId) => {
     const userProfile = await user.findById(userId);
+    console.log('farah');
     const followingCount = userProfile.following.length;
     const followersCount = userProfile.followers.length;
 
-    const returnedUser = (({ username, name, birthdate, tweets }) => ({ username, name, birthdate, tweets }))(userProfile);
+    const returnedUser = (({ username, name, birthdate, tweets, protectedTweets }) => ({ username, name, birthdate, tweets, protectedTweets }))(userProfile);
     returnedUser["followingCount"] = followingCount;
     returnedUser["followersCount"] = followersCount;
     return returnedUser;
@@ -26,16 +27,33 @@ const getProfile = async (userId) => {
 3- check protected
 */
 
-const getUser = async username  => {
-    const notMeId = user.find({'username': username}).select(_id);
-    const notMe = await getProfile(notMeId);
-    const mutuals = user.findById(req.user.id).select(following).following.find(x => x._id === notMeId);
-    const followsMe = user.findById(req.user.id).select(followers).followers.find(x => x._id === notMeId);
-    const protected = notMe.protectedTweets;
+const getUser = async (notMeId,meId)  => {
+
+    //getting profile
+    let notMe = await getProfile(notMeId);
+
+    //checking if I am following user
+    let mutuals = await user.findById(meId).select('following');
+    mutuals = mutuals.following.find(x => x._id === notMeId);
+
+    //checking if user follows me
+    let followsMeProp = await user.findById(meId).select('followers');
+    followsMeProp = followsMeProp.followers.find(x => x._id === notMeId);
+
+    //checking if their profile is protected
+    let protected = notMe.protectedTweets;
+    
+    let followsMe = followsMeProp? true:false;
+    notMe["followsMe"] = followsMe;
     let returnedUser;
+    
+    //if private user & I don't follow him, don't send tweets
     if(protected && !mutuals) {
+        //removing tweets from returnedUser
         returnedUser = 
-        (({ username, name, birthdate, followingCount, followersCount}) => ({ username, name, birthdate,followingCount, followersCount}))(notMe);
+        (({ username, name, birthdate, followingCount, followersCount, followsMe}) => 
+        ({ username, name, birthdate,followingCount, followersCount, followsMe}))(notMe);
+        //returnedUser = await notMe.select('-tweets');
     }
     else {
         returnedUser = notMe;
@@ -43,21 +61,32 @@ const getUser = async username  => {
     return returnedUser;
 };
 
-const getMe = async username => {
-    const me = await getProfile(req.user.id);
-    res.status(200).json(me);
+const getMe = async meId => {
+    const me = await getProfile(meId);
+    return me;
 };
 
 exports.getProfile = catchAsync(async (req, res, next) => {
+    //getting user in route params
     const sentUser = req.params.username;
-    const me = req.user.username;
+    let sentUserId = await user.findOne({'username': sentUser}).select('_id');
+    if(!sentUserId) return next(new AppError('This username does not exists.',401));
+    sentUserId = sentUserId._id.toString();
+
+    //getting my id from req user (protect)
+    const meId = req.user.id;
+    let me = await user.findById(meId).select('username');
+    me = me.username;
+
     let currentUser;
+    //checking if I am visiting my profile, or another user's profile
     if(me === sentUser) {
-        currentUser = await getMe(me);
+        currentUser = await getMe(meId);
     }
     else {
-        currentUser = await getUser(sentUser);
+        currentUser = await getUser(sentUserId,meId);
     }
+
     res.status(200).json(currentUser);
 });
 

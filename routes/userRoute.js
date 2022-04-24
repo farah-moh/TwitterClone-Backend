@@ -5,7 +5,7 @@ const userController = require('./../controllers/userController');
 const passportConfig = require('../config/passport');
 const passport = require('passport');
 
-const router = express.Router();
+const router = express.Router({mergeParams: true});
 
 router.use(authenticationController.protect);
 

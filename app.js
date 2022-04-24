@@ -13,7 +13,6 @@ app.use('/', authenticationRoute);
 app.use('/home', homePage);
 app.use('/settings', settingsRoute);
 app.use('/:username',userRoute)
-app.use('/', authenticationRoute);
 app.use('/messages/:receiver_id', messagesRoute);
 
 app.all('*', (req, res, next) => {
