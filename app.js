@@ -1,17 +1,18 @@
 const express = require('express')
 const app = express()
+require('dotenv').config();
 app.use(express.json()) 
 const AppError = require('./utils/appError')
 const authenticationRoute = require('./routes/authenticationRoute')
 const messagesRoute= require("./routes/messagesRoute");
-const settings = require('./routes/settingsRoute');
-require('dotenv').config();
+const settingsRoute = require('./routes/settingsRoute');
 const homePage = require('./routes/postHomePage')
+const userRoute = require('./routes/userRoute')
 
 app.use('/', authenticationRoute);
 app.use('/home', homePage);
-app.use('/settings', settings);
-
+app.use('/settings', settingsRoute);
+app.use('/:username',userRoute)
 app.use('/', authenticationRoute);
 app.use('/messages/:receiver_id', messagesRoute);
 

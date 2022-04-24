@@ -109,6 +109,11 @@ const userSchema = new Schema({
         ref: 'user'
     }],
 
+    tweets: [{
+        type: Schema.ObjectId,
+        ref: 'tweet'
+    }],
+
     likedTweets: [{
         type: Schema.ObjectId,
         ref: 'tweet'
@@ -156,6 +161,10 @@ const userSchema = new Schema({
     website: {
         type: String,
         validate: [validator.isURL, 'URL is invalid.'],
+    },
+    protectedTweets: {
+        type: Boolean,
+        default: false
     }
 
 },
