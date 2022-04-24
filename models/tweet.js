@@ -1,3 +1,16 @@
+/**
+ * The tweet object
+ * @typedef {object} TWEET
+ * @property {userObject} user - The user who posted the tweet
+ * @property {String} body - The body of the tweet
+ * @property {Boolean} isReply - Checking the tweet is replied or normal tweer
+ * @property {Array} media - Array of the media of the tweet
+ * @property {Array} favoriters - Array of the users making the tweet favorite
+ * @property {Array} retweeters - Array of the users who retweeted the tweet
+ * @property {Array} replies - Array of the replies on the tweet
+ * @property {Array} taggedUsers - Array of the tagged users in the tweet
+ */
+
 const mongoose = require('mongoose');
 const validator = require('validator');
 const Schema = mongoose.Schema;

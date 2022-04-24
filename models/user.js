@@ -1,6 +1,6 @@
 /**
  * The user object
- * @typedef {object} user
+ * @typedef {object} USER
  * @property {String} email - The email of the user
  * @property {Boolean} confirmed - The user confirmed email verification
  * @property {String} confirmEmailToken - The user email confirmation token

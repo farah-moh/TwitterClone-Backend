@@ -9,6 +9,17 @@ const settingsRoute = require('./routes/settingsRoute');
 const homePage = require('./routes/postHomePage')
 const userRoute = require('./routes/userRoute')
 
+const cors = require('cors');
+const corsOptions = {
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type,Authorization,X-Forwarded-For',
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+  };
+  app.use(cors(corsOptions));
+
 app.use('/', authenticationRoute);
 app.use('/home', homePage);
 app.use('/settings', settingsRoute);

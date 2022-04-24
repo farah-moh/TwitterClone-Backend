@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Home</title>
+    <title>JSDoc: Source: models/messages.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,36 +17,65 @@
 
 <div id="main">
 
-    <h1 class="page-title">Home</h1>
+    <h1 class="page-title">Source: models/messages.js</h1>
 
     
 
 
 
     
-
-
-    <h3> </h3>
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
     <section>
-        <article><h1>TwitterClone</h1></article>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * The messages object
+ * @typedef {object} MESSAGE
+ * @property {String} text - The message string
+ * @property {String} media - The media sent within the message
+ * @property {userObject} sender - The user sending the message
+ * @property {userObject} receiver - The user receiving the message
+ */
+
+const mongoose = require ('mongoose');
+const Schema = mongoose.Schema;
+const messageSchema = new Schema({
+
+    text: {
+        type: String,
+        minLength: 1,
+        trim: true
+    },
+
+    media: {
+        type: String,
+        default: null
+    },
+
+    sender: {
+        type: Schema.Types.ObjectId,
+        ref: "user",
+        required: true
+     },
+
+    receiver: {
+        type: Schema.Types.ObjectId,
+        ref: "user",
+        required: true
+     },
+
+    createdAt: {
+        type: Date,
+        default: Date.now(),
+
+     }
+},
+    {timestamps: true},
+);
+
+const messages=mongoose.model('message',messageSchema);
+
+module.exports = messages;</code></pre>
+        </article>
     </section>
-
-
 
 
 

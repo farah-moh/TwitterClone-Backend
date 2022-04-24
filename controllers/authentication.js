@@ -15,6 +15,11 @@ const signToken = id => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE })
 }
 
+/**
+ * @description Makes an instance of a new user
+ * @param {object} body - Containes the sign up info of the user
+ * @returns {Object} user object
+ */
 //   Creating new user
 const createUser = async body => {
     const newUser = await user.create({
@@ -99,7 +104,12 @@ exports.signUpConfirmed = catchAsync(async (req, res, next) => {
 
 
 /*  ******* Login + Validation + Facebook Login ******* */
-
+/**
+ * @description - Validates the email and password and check if they are correct
+ * @param {string} email - The user email 
+ * @param {string} password - The user password
+ * @returns {Object} userObject
+ */
 const validateLogin = async (email, password) => {
     const User = await user.findOne({email: email});
     if (!User) throw new AppError('Incorrect email or password', 400);
@@ -162,9 +172,9 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
 
 /**
- * @description Sends a mail to a user for forget password
- * @param {String} email The email of the user to send the token to
- * @param {String} baseURL The URL of for the password reset that is sent by email
+ * @description - Sends a mail to a user for forget password
+ * @param {String} email - The email of the user to send the token to
+ * @param {String} baseURL - The URL of for the password reset that is sent by email
  */
 const sendForgotPasswordToken = async email => {
     const User = await user.findOne({email});
@@ -196,6 +206,12 @@ const sendForgotPasswordToken = async email => {
   };
   exports.sendForgotPasswordToken = sendForgotPasswordToken;
 
+  /**
+   * @description - Resets the user password
+   * @param {string} token - The token sent with the request
+   * @param {string} password - The new password to update the database
+   * @returns {Object} userObject 
+   */
 const resetPasswordFunc = async (token, password) => {
     const hashedToken = crypto
       .createHash('SHA256')
@@ -239,6 +255,13 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   })
 });
 
+/**
+ * @description - Checks the user password and changes it to the new password
+ * @param {string} id - The user ID
+ * @param {string} password - The user's old password
+ * @param {string} newPassword - The user's new password
+ * @returns {Object} userObject
+ */
 const changePasswordFunc = async (id, password, newPassword) => {
   const User = await user.findOne({_id: id});
 
@@ -267,7 +290,7 @@ exports.changePassword = catchAsync(async (req, res, next) => {
 /* Services */
 
 /**
- * @description Protect middleware
+ * @description Protect middleware that checks if the sent token is correct and the user is logged in
  * @param {Object} req Request object.
  */
 

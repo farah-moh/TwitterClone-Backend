@@ -1,3 +1,10 @@
+/**
+ * The notification object
+ * @typedef {object} NOTIFICATION
+ * @property {activityObject} activity - The activity happening
+ * @property {String} notificationStream - The text sent in the notifications
+ */
+
 const mongoose = require('mongoose');
 const validator = require('validator');
 const Schema = mongoose.Schema;
