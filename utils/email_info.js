@@ -6,8 +6,8 @@ module.exports = async options => {
       port: 465,
       secure: true, // use SSL
       auth: {
-          user: 'abdelrahman.m.ezzat@gmail.com',
-          pass: 'B01095050'
+          user: process.env.EMAIL_USERNAME,
+          pass: process.env.EMAIL_PASSWORD
       }
 
     //   host: 'smtp.ethereal.email',
