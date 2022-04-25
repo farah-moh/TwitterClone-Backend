@@ -13,12 +13,18 @@ const cors = require('cors');
 const corsOptions = {
     origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Content-Type,Authorization,X-Forwarded-For',
+    allowedHeaders: 'Token,Content-Type,Authorization,X-Forwarded-For',
     credentials: true,
     preflightContinue: false,
     optionsSuccessStatus: 204
   };
   app.use(cors(corsOptions));
+  app.get('/cors', (req, res) => {
+      res.set('Access-Control-Allow-Origin', true);
+      res.header("Access-Control-Allow-Origin", "*")
+      res.send({ "msg": "This has CORS enabled 🎈" })
+      });
+  app.enable('trust proxy');
 
 app.use('/', authenticationRoute);
 app.use('/home', homePage);
