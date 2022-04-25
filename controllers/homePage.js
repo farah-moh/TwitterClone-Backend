@@ -2,7 +2,12 @@ const express = require('express');
 const user = require('../models/user');
 const tweet = require('../models/tweet');
 
-
+/**
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
 
 exports.postTweet = async(req, res)=>{
     const {body, media, taggedUsers} = req.body;
