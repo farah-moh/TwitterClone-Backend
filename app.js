@@ -1,4 +1,6 @@
 const express = require('express')
+const cors = require('cors');
+
 const app = express()
 require('dotenv').config();
 app.use(express.json()) 
@@ -9,7 +11,6 @@ const settingsRoute = require('./routes/settingsRoute');
 const homePage = require('./routes/postHomePage')
 const userRoute = require('./routes/userRoute')
 
-const cors = require('cors');
 const corsOptions = {
     origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
