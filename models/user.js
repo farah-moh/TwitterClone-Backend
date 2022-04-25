@@ -160,7 +160,8 @@ const userSchema = new Schema({
     },
     website: {
         type: String,
-        validate: [validator.isURL, 'URL is invalid.'],
+        //default: " ",
+        validate: [validator.isURL, 'URL is invalid.']
     },
     protectedTweets: {
         type: Boolean,

@@ -7,13 +7,15 @@ const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
 const sendEmail = require('./../utils/email_info');
 const { _infoTransformers } = require('passport/lib');
+const authentication = require('./authentication')
+
 
 const getProfile = async (userId,type) => {
     const userProfile = await user.findById(userId);
     const followingCount = userProfile.following.length;
     const followersCount = userProfile.followers.length;
     const likes = userProfile.likedTweets;
-    const returnedUser = (({ username, name, birthdate, tweets, protectedTweets }) => ({ username, name, birthdate, tweets, protectedTweets }))(userProfile);
+    const returnedUser = (({ username, name, birthdate, tweets, protectedTweets,country,city,bio,website,createdAt }) => ({ username, name, birthdate, tweets, protectedTweets,country,city,bio,website,createdAt }))(userProfile);
 
     if(type==='profile') {
         let no_replies = returnedUser.tweets;
@@ -71,8 +73,8 @@ const getUser = async (notMeId,meId,type)  => {
     if(isProtected && !mutuals) {
         //removing tweets from returnedUser
         returnedUser = 
-        (({ username, name, birthdate, followingCount, followersCount, followsMe, protectedTweets}) => 
-        ({ username, name, birthdate,followingCount, followersCount, followsMe, protectedTweets}))(notMe);
+        (({ username, name, birthdate, followingCount, followersCount, followsMe, protectedTweets,country,city,bio,website,createdAt}) => 
+        ({ username, name, birthdate,followingCount, followersCount, followsMe, protectedTweets,country,city,bio,website,createdAt}))(notMe);
         //returnedUser = await notMe.select('-tweets');
     }
     else {
@@ -90,7 +92,7 @@ const getMe = async (meId,type) => {
 
 const preGetProfile = async (sentUsername,meId, type, next) => {
     //getting user in route params
-    console.log(type);
+    // console.log(type);
     let sentUserId = await user.findOne({'username': sentUsername}).select('_id');
     if(!sentUserId) throw new AppError('This username does not exists.',401);
     sentUserId = sentUserId._id.toString();
@@ -109,6 +111,8 @@ const preGetProfile = async (sentUsername,meId, type, next) => {
     }
     return currentUser;
 };
+exports.preGetProfile = preGetProfile;
+
 
 exports.getProfileMedia = catchAsync(async (req, res, next) => {
     //getting user in route params
@@ -151,17 +155,18 @@ exports.getProfile = catchAsync(async (req, res, next) => {
 });
 
 
-const getEditProfile = async (userId) => {
+const getEditProfileFunc = async (userId) => {
     const userProfile = await user.findById(userId).select('image headerImage name bio country city website birthdate');
     return userProfile;
 };
+exports.getEditProfileFunc = getEditProfileFunc;
 
 exports.getEditProfile = catchAsync(async (req, res, next) => {
-    const userProfile = await getEditProfile(req.user.id);
+    const userProfile = await getEditProfileFunc(req.user.id);
     res.status(200).json(userProfile);
 });
   
-const editProfile = async (userId, newInfo) => {
+const editProfileFunc = async (userId, newInfo) => {
 
     const editedUser = await user.findByIdAndUpdate(userId, newInfo, {
         new: true
@@ -169,9 +174,11 @@ const editProfile = async (userId, newInfo) => {
     if (!editedUser) throw new AppError('No user with this id', 404);
     return editedUser;
 };
+exports.editProfileFunc = editProfileFunc;
+
 
 exports.editProfile = catchAsync(async (req, res, next) => {
-    const editedUser = await editProfile(req.user._id, req.body);
+    const editedUser = await editProfileFunc(req.user._id, req.body);
     res.status(200).json(editedUser);
   });
 
