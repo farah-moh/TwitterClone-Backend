@@ -8,7 +8,7 @@ const AppError = require('./utils/appError')
 const authenticationRoute = require('./routes/authenticationRoute')
 const messagesRoute= require("./routes/messagesRoute");
 const settingsRoute = require('./routes/settingsRoute');
-const homePage = require('./routes/postHomePage')
+const postHomePage = require('./routes/postHomePage')
 const userRoute = require('./routes/userRoute')
 
 const corsOptions = {
@@ -28,7 +28,7 @@ const corsOptions = {
   app.enable('trust proxy');
 
 app.use('/', authenticationRoute);
-app.use('/home', homePage);
+app.use('/home', postHomePage);
 app.use('/settings', settingsRoute);
 app.use('/:username',userRoute)
 app.use('/messages/:receiver_id', messagesRoute);

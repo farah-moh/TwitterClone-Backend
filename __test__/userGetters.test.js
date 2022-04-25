@@ -54,7 +54,8 @@ describe('userService get user id functionality', () => {
 
   // Drop the whole users collection after finishing testing
   afterAll(async () => {
-    await mongoose.connection.collection('users').deleteMany({})
+    await mongoose.connection.collection('users').deleteMany({});
+    mongoose.disconnect();
   })
 
   //Testing update edit profile successfully

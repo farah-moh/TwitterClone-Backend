@@ -1,21 +1,54 @@
-const express = require('express'); 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: controllers/homePage.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: controllers/homePage.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const express = require('express'); 
 const user = require('../models/user');
 const tweet = require('../models/tweet');
 
 
-
+/**
+ * 
+ * @param {Object} req 
+ * @param {*} res 
+ * @returns 
+ */
 exports.postTweet = async(req, res)=>{
     const {body, media, taggedUsers} = req.body;
     const userId =req.user.id;
 
     //Checking if there is something to post.
-    if(!body && !media && !taggedUsers){
+    if(!body &amp;&amp; !media &amp;&amp; !taggedUsers){
         return res.status(422).json({error: "Please enter data to post the tweet!"});
     }
     
     try{
         //Checking the count of media.
-        if(media&&media.length>4)
+        if(media&amp;&amp;media.length>4)
             return res.status(500).json({error:"The media must be less than 5"});
 
         let createTweet = new tweet({
@@ -24,7 +57,7 @@ exports.postTweet = async(req, res)=>{
       
         //Can I tag myself?
         //Checking the count of tagged users
-        if(taggedUsers && taggedUsers.length>10)
+        if(taggedUsers &amp;&amp; taggedUsers.length>10)
             return res.status(422).json({error: "Can't tag more than 10 users!"});
 
         // Adding body/taggedUsers/media if exist
@@ -50,7 +83,7 @@ exports.getTweets = async(req, res)=>{
     try{
         //Find user tweets
         let dataSent = [];
-        let sortedArray = [];
+        let SortedArray = [];
         let mainUser = await user.findById(userId);
         console.log(mainUser);
         if(!mainUser)
@@ -59,8 +92,8 @@ exports.getTweets = async(req, res)=>{
         let tweets = await tweet.find({});
         if(tweets){
             for(let i of tweets){
-                //Is The tweet written by the user & not reply?
-                if(i.user==userId && !i.isReply){
+                //Is The tweet written by the user &amp; not reply?
+                if(i.user==userId &amp;&amp; !i.isReply){
                     userTweet = await user.findById(i.user);
                     //Creating objects that will be sent in json file
                     let data = {
@@ -91,7 +124,7 @@ exports.getTweets = async(req, res)=>{
                 if(tweets){
                     for(let j of tweets){
                         let user2 = await user.findById(j.user);
-                        if(!j.isReply && user1 && user2 && user1.username == user2.username){
+                        if(!j.isReply &amp;&amp; user1 &amp;&amp; user2 &amp;&amp; user1.username == user2.username){
                             //Creating objects that will be sent in json file
                             let data = {
                                 key:j._id,
@@ -118,13 +151,12 @@ exports.getTweets = async(req, res)=>{
         }
 
         if(dataSent.length>0){
-            sortedArray = dataSent.sort(function(a, b){
-
+            SortedArray = dataSent.sort(function(a, b){
                 return new Date(b.createdAt || b.updatedAt) - new Date(a.createdAt || a.updatedAt) ;
             })
         }  
         //3ayzeen retweets terga3?
-        return res.status(200).json({data: sortedArray, succes: "true"});
+        return res.status(200).json({data: SortedArray, succes: "true"});
     }
     catch (err) {
         console.log(err)
@@ -285,16 +317,16 @@ exports.createUser= async(req, res)=>{
     const userId =req.user.id;
 
     //Checking on the content of the comment
-    if(!body&& !media && !taggedUsers){
+    if(!body&amp;&amp; !media &amp;&amp; !taggedUsers){
         return res.status(422).json({error: "Please enter data to reply!"});
     }
     try{
         //Checking the length of media
-        if(media&&media.length>4)
+        if(media&amp;&amp;media.length>4)
             return res.status(500).json({error:"The media must be less than 5"});
         
         //Checking the count of the tagged users
-        if(taggedUsers && taggedUsers.length>10)
+        if(taggedUsers &amp;&amp; taggedUsers.length>10)
              return res.status(500).json({error:"Can't tag more than 10 users!"});
 
         //Reply is a tweet so we have to make the tweet first
@@ -500,3 +532,26 @@ exports.getReplies = async(req, res) =>{
 
 
 
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#changePasswordFunc">changePasswordFunc</a></li><li><a href="global.html#createUser">createUser</a></li><li><a href="global.html#editProfileFunc">editProfileFunc</a></li><li><a href="global.html#postTweet">postTweet</a></li><li><a href="global.html#protectService">protectService</a></li><li><a href="global.html#resetPasswordFunc">resetPasswordFunc</a></li><li><a href="global.html#sendForgotPasswordToken">sendForgotPasswordToken</a></li><li><a href="global.html#validateLogin">validateLogin</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Mon Apr 25 2022 17:51:26 GMT+0200 (Eastern European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

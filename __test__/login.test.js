@@ -45,6 +45,7 @@ describe('Login function', () => {
     // Drop the whole users collection after finishing testing
     afterAll(async () => {
       await mongoose.connection.collection('users').deleteMany({})
+      mongoose.disconnect();
     })
   
     // Testing sign in successfully
