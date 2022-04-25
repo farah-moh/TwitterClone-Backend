@@ -16,9 +16,8 @@ const {
     getReplies
 } = require ('../controllers/homePage');
 
-router.get('/', getTweets);
+router.get('/:userId/', getTweets);
 router.get('/showUsers', showUsers);
-router.get('/:tweetId/likeTweet', likeTweet);
 
 router.get('/:tweetId/getRetweets', getRetweets);
 router.get('/:tweetId/getReplies', getReplies);
@@ -30,6 +29,7 @@ router.post('/createTweet', createTweet);
 
 router.post('/compose-tweet', postTweet);
 
+router.post('/:tweetId/likeTweet', likeTweet);
 router.post('/retweet', makeRetweet);
 router.post('/reply', makeReply);
 

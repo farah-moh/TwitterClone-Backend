@@ -45,7 +45,7 @@ exports.postTweet = async(req, res)=>{
 }
 
 exports.getTweets = async(req, res)=>{
-    const {userId} =req.body;
+    const userId =req.params.userId;
 
     try{
         //Find user tweets
@@ -61,6 +61,7 @@ exports.getTweets = async(req, res)=>{
                 userTweet = await user.findById(i.user);
                 //Creating objects that will be sent in json file
                 let data = {
+                    key:i._id,
                     username: (userTweet).username,
                     name: (userTweet).name,
                     email: (userTweet).email,
@@ -88,6 +89,7 @@ exports.getTweets = async(req, res)=>{
                     if(!j.isReply && user1 && user2 && user1.username == user2.username){
                         //Creating objects that will be sent in json file
                         let data = {
+                            key:j._id,
                             username: (user1).username,
                             name: (user1).name,
                             email: (user1).email,
