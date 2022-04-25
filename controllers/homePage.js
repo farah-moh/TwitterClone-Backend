@@ -55,28 +55,30 @@ exports.getTweets = async(req, res)=>{
             return res.status(500).json({error:"There is no user with this id!"});
         //Getting all tweets
         let tweets = await tweet.find({});
-        for(let i of tweets){
-            //Is The tweet written by the user & not reply?
-            if(i.user==userId && !i.isReply){
-                userTweet = await user.findById(i.user);
-                //Creating objects that will be sent in json file
-                let data = {
-                    key:i._id,
-                    username: (userTweet).username,
-                    name: (userTweet).name,
-                    email: (userTweet).email,
-                    userImage: (userTweet).image,
-                    tweetBody: i.body,
-                    tweetMedia: i.media,
-                    repliesCount: (i.replies).length, 
-                    retweetersCount: (i.retweeters).length,
-                    favoritersCount: (i.favoriters).length,
-                    updatedAt: i.updatedAt,
-                    createdAt: i.createdAt,
-                    taggedUsers: i.taggedUsers
+        if(tweets){
+            for(let i of tweets){
+                //Is The tweet written by the user & not reply?
+                if(i.user==userId && !i.isReply){
+                    userTweet = await user.findById(i.user);
+                    //Creating objects that will be sent in json file
+                    let data = {
+                        key:i._id,
+                        username: (userTweet).username,
+                        name: (userTweet).name,
+                        email: (userTweet).email,
+                        userImage: (userTweet).image,
+                        tweetBody: i.body,
+                        tweetMedia: i.media,
+                        repliesCount: (i.replies).length, 
+                        retweetersCount: (i.retweeters).length,
+                        favoritersCount: (i.favoriters).length,
+                        updatedAt: i.updatedAt,
+                        createdAt: i.createdAt,
+                        taggedUsers: i.taggedUsers
+                    }
+                    //pushing it to the array.
+                    dataSent.push(data);
                 }
-                //pushing it to the array.
-                dataSent.push(data);
             }
         }
         //Find the tweets of the followers
@@ -109,9 +111,15 @@ exports.getTweets = async(req, res)=>{
                 
                 }
             }
-        }   
+        }
+        let SortedArray = [];
+        if(dataSent.length>0){
+            sortedArray = dataSent.sort(function(a, b){
+                return new Date(b.createdAt || b.updatedAt) - new Date(a.createdAt || a.updatedAt) ;
+            })
+        }  
         //3ayzeen retweets terga3?
-        return res.status(200).json({data: dataSent, succes: "true"});
+        return res.status(200).json({data: sortedArray, succes: "true"});
     }
     catch (err) {
         console.log(err)
