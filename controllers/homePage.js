@@ -3,10 +3,10 @@ const user = require('../models/user');
 const tweet = require('../models/tweet');
 
 /**
- * 
- * @param {*} req 
+ * @description This function is used to post a tweet and save it in the database
+ * @param {*} req  
  * @param {*} res 
- * @returns 
+ * @returns {Object} This function returns the created tweet and the status of the post
  */
 
 exports.postTweet = async(req, res)=>{
@@ -49,6 +49,13 @@ exports.postTweet = async(req, res)=>{
     }
 
 }
+
+/**
+ * @description This function is used to get the tweets of the user & his following list by using the token saved in the header
+ * @param {*} req 
+ * @param {*} res 
+ * @returns {Object} This returns all user tweets & the tweets his following list
+ */
 
 exports.getTweets = async(req, res)=>{
     const userId =req.user.id;
@@ -129,7 +136,7 @@ exports.getTweets = async(req, res)=>{
             })
         }  
         //3ayzeen retweets terga3?
-        return res.status(200).json({data: sortedArray, succes: "true"});
+        return res.status(200).json({data: sortedArray, succes: "true", userName: mainUser.username});
     }
     catch (err) {
         console.log(err)
@@ -138,7 +145,13 @@ exports.getTweets = async(req, res)=>{
 
 }
 
-//Like/unlike Tweet
+/**
+ * @description This function is used to like/unlike a tweet and saves user id in the database
+ * @param {*} req 
+ * @param {*} res 
+ * @returns {Object} returns the status (failed/success) and the liked tweet 
+ */
+
 exports.likeTweet = async(req, res)=>{
     const userId =req.user.id;
 
@@ -232,7 +245,13 @@ exports.createUser= async(req, res)=>{
     return res.status(200).json({message: "Retweeted successfully", tweets: tweets, users: users});
  }
 
- //function to make retweet
+/**
+ * @description This function is used to retweet a tweet and saves user id in the database
+ * @param {*} req 
+ * @param {*} res 
+ * @returns {Object} returns the status (failed/success) and the retweeted tweet 
+ */
+
  exports.makeRetweet = async(req, res)=>{
     const {tweetId} = req.body;
     const userId =req.user.id;
@@ -284,7 +303,12 @@ exports.createUser= async(req, res)=>{
 
  } 
 
-//Reply
+/**
+ * @description This function is used to make reply on a tweet using tweet it sent in the parameter
+ * @param {*} req 
+ * @param {*} res 
+ * @returns {Object} returns the status of the tweet and the tweet which the user replied on
+ */
  exports.makeReply = async(req, res) =>{
     const {body, tweetId, media, taggedUsers} = req.body;
     const userId =req.user.id;
@@ -340,7 +364,14 @@ exports.createUser= async(req, res)=>{
     }
  } 
 
-//Get retweets of a tweet by tweetId
+
+/**
+ * @description This function is used to know who retweeted this tweet(tweet id is sent in the parameters)
+ * @param {*} req 
+ * @param {*} res 
+ * @returns {Object} Returns the users who retweeted a tweet
+ */
+
 exports.getRetweets = async(req, res) =>{
     const tweetId = req.params.tweetId;
     try{
@@ -378,7 +409,14 @@ exports.getRetweets = async(req, res) =>{
 
  }
 
-//Get likers of a tweet by tweetId
+/**
+ * @description This function is used to know who liked this tweet(tweet id is sent in the parameters)
+ * @param {*} req 
+ * @param {*} res 
+ * @returns {Object} Returns the users who liked this tweet
+ */
+
+ 
 exports.getLikers = async(req, res) =>{
     const tweetId = req.params.tweetId;
     try{
@@ -416,7 +454,13 @@ exports.getLikers = async(req, res) =>{
     
 }
 
-//Get taggged users of a tweet by tweetId
+/**
+ * @description This function is used to know who are tagged in a tweet(tweet id is sent in the parameters)
+ * @param {*} req 
+ * @param {*} res 
+ * @returns {Object} Returns the users who are tagged in a tweet
+ */
+
 exports.getTaggedUsers = async(req, res) =>{
     const tweetId = req.params.tweetId;
     try{
@@ -453,6 +497,15 @@ exports.getTaggedUsers = async(req, res) =>{
     }
     
 }
+
+
+/**
+ * @description This function is used to get the replies of a certain tweet (tweet id is sent in the header)
+ * @param {*} req 
+ * @param {*} res 
+ * @returns {Object} Returns the replies on a tweet
+ */
+
 
 exports.getReplies = async(req, res) =>{
     const tweetId = req.params.tweetId;
