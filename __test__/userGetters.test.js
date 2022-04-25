@@ -9,6 +9,7 @@ const user = require('../models/user')
 const authentication = require('../controllers/authentication')
 const userController = require('../controllers/userController')
 const app = require('../app')
+const assert = require('assert');
 
 jest.setTimeout(60000)
 
@@ -40,6 +41,7 @@ describe('userService get user id functionality', () => {
         confirmEmailToken: '123456789'
        })
        await validUser.save();
+       
 
       // get the id of the document in the db to use it to get authorization token
       await user.find({ email: 'boody123@gmail.com' }, (err, User) => {
@@ -55,36 +57,51 @@ describe('userService get user id functionality', () => {
     await mongoose.connection.collection('users').deleteMany({})
   })
 
+  //Testing update edit profile successfully
+  it('Should patch edit profile successfully', async () => {
+    let lolUser = await user.findOne({username: 'bodda'});
 
-  let session = null;
-  it('Should login', done => {
-    supertest(app)  
-      .post('/login')  
-      .send({
-            email: 'boody123@gmail.com',
-            password: 'boody123'
-          })  
-      .end((err, res) => {  
-         if (err) {
-           return done(err);
-         }
-         session = res.token;  
-         done();  
-     });
+    const newInfo = {
+        name: "booodaaa",
+        bio: "hello world",
+        country: "Egypt",
+        city: "Cairo",
+        website: "www.bodda.com",
+        birthdate: "2002-12-04"
+    }
+    lolUser = await userController.editProfileFunc(lolUser._id,newInfo)
+
+    assert.deepStrictEqual(lolUser.name, 'booodaaa');
   })
 
-  //Testing update profile successfully
+  //Testing get edit profile successfully
   it('Should get edit profile successfully', async () => {
-    const response = await supertest(app).get('/settings/profile').set(base).send({
-
-    })
-    console.log(JSON.stringify(authToken))
-    expect(response.status).toBe(200)
-    // expect(response.body.status).toBe('Success')
-    // expect(response.body.user.name).toBe('mohamed')
-    // expect(response.body.user.email).toBe('mohamed@email.com')
-    // expect(response.body.user.gender).toBe('male')
-    // expect(response.body.user.dateOfBirth).toBe('1990-4-10')
+    let lolUser = await user.findOne({username: 'bodda'});
+    const xDUser = await userController.getEditProfileFunc(lolUser._id)
+    assert.deepStrictEqual(lolUser.name, xDUser.name);
   })
+
+    //Testing get profile successfully
+    it('Should get profile successfully', async () => {
+      let lolUser = await user.findOne({username: 'bodda'});
+      const xDUser = await userController.preGetProfile(lolUser.username,lolUser._id,'profile')
+      assert.deepStrictEqual(lolUser.name, xDUser.name);
+    })
+
+    //Testing get profile media successfully
+    it('Should get profile media successfully', async () => {
+      let lolUser = await user.findOne({username: 'bodda'});
+      const xDUser = await userController.preGetProfile(lolUser.username,lolUser._id,'media')
+      assert.deepStrictEqual(lolUser.name, xDUser.name);
+    })
+
+    //Testing get profile likes successfully
+    it('Should get profile likes successfully', async () => {
+      let lolUser = await user.findOne({username: 'bodda'});
+      const xDUser = await userController.preGetProfile(lolUser.username,lolUser._id,'likes')
+      assert.deepStrictEqual(lolUser.name, xDUser.name);
+    })
+    
+
 
 })

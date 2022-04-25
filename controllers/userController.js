@@ -111,6 +111,8 @@ const preGetProfile = async (sentUsername,meId, type, next) => {
     }
     return currentUser;
 };
+exports.preGetProfile = preGetProfile;
+
 
 exports.getProfileMedia = catchAsync(async (req, res, next) => {
     //getting user in route params
@@ -153,17 +155,18 @@ exports.getProfile = catchAsync(async (req, res, next) => {
 });
 
 
-const getEditProfile = async (userId) => {
+const getEditProfileFunc = async (userId) => {
     const userProfile = await user.findById(userId).select('image headerImage name bio country city website birthdate');
     return userProfile;
 };
+exports.getEditProfileFunc = getEditProfileFunc;
 
 exports.getEditProfile = catchAsync(async (req, res, next) => {
-    const userProfile = await getEditProfile(req.user.id);
+    const userProfile = await getEditProfileFunc(req.user.id);
     res.status(200).json(userProfile);
 });
   
-const editProfile = async (userId, newInfo) => {
+const editProfileFunc = async (userId, newInfo) => {
 
     const editedUser = await user.findByIdAndUpdate(userId, newInfo, {
         new: true
@@ -171,9 +174,11 @@ const editProfile = async (userId, newInfo) => {
     if (!editedUser) throw new AppError('No user with this id', 404);
     return editedUser;
 };
+exports.editProfileFunc = editProfileFunc;
+
 
 exports.editProfile = catchAsync(async (req, res, next) => {
-    const editedUser = await editProfile(req.user._id, req.body);
+    const editedUser = await editProfileFunc(req.user._id, req.body);
     res.status(200).json(editedUser);
   });
 
