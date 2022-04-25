@@ -1,5 +1,5 @@
 const router = require('express').Router()
-
+const authenticationController = require('./../controllers/authentication');
 
 const {
     postTweet,
@@ -16,7 +16,9 @@ const {
     getReplies
 } = require ('../controllers/homePage');
 
-router.get('/:userId/', getTweets);
+router.use(authenticationController.protect);
+
+router.get('/', getTweets);
 router.get('/showUsers', showUsers);
 
 router.get('/:tweetId/getRetweets', getRetweets);

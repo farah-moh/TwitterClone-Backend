@@ -5,7 +5,8 @@ const tweet = require('../models/tweet');
 
 
 exports.postTweet = async(req, res)=>{
-    const {body, media, userId, taggedUsers} = req.body;
+    const {body, media, taggedUsers} = req.body;
+    const userId =req.user.id;
 
     //Checking if there is something to post.
     if(!body && !media && !taggedUsers){
@@ -45,12 +46,13 @@ exports.postTweet = async(req, res)=>{
 }
 
 exports.getTweets = async(req, res)=>{
-    const userId =req.params.userId;
-
+    const userId =req.user.id;
     try{
         //Find user tweets
         let dataSent = [];
+        let sortedArray = [];
         let mainUser = await user.findById(userId);
+        console.log(mainUser);
         if(!mainUser)
             return res.status(500).json({error:"There is no user with this id!"});
         //Getting all tweets
@@ -86,35 +88,38 @@ exports.getTweets = async(req, res)=>{
         if(userFollowers){
             for(let i of userFollowers){
                 let user1 = await user.findById(i);
-                for(let j of tweets){
-                    let user2 = await user.findById(j.user);
-                    if(!j.isReply && user1 && user2 && user1.username == user2.username){
-                        //Creating objects that will be sent in json file
-                        let data = {
-                            key:j._id,
-                            username: (user1).username,
-                            name: (user1).name,
-                            email: (user1).email,
-                            userImage: (user1).image,
-                            tweetBody: j.body,
-                            tweetMedia: j.media,
-                            repliesCount: (j.replies).length, 
-                            retweetersCount: (j.retweeters).length,
-                            favoritersCount: (j.favoriters).length,
-                            updatedAt: j.updatedAt,
-                            createdAt: j.createdAt,
-                            taggedUsers: j.taggedUsers
+                if(tweets){
+                    for(let j of tweets){
+                        let user2 = await user.findById(j.user);
+                        if(!j.isReply && user1 && user2 && user1.username == user2.username){
+                            //Creating objects that will be sent in json file
+                            let data = {
+                                key:j._id,
+                                username: (user1).username,
+                                name: (user1).name,
+                                email: (user1).email,
+                                userImage: (user1).image,
+                                tweetBody: j.body,
+                                tweetMedia: j.media,
+                                repliesCount: (j.replies).length, 
+                                retweetersCount: (j.retweeters).length,
+                                favoritersCount: (j.favoriters).length,
+                                updatedAt: j.updatedAt,
+                                createdAt: j.createdAt,
+                                taggedUsers: j.taggedUsers
+                            }
+                            //pushing it to the array.
+                            dataSent.push(data);
                         }
-                        //pushing it to the array.
-                        dataSent.push(data);
+                    
                     }
-                
                 }
             }
         }
-        let SortedArray = [];
+
         if(dataSent.length>0){
             sortedArray = dataSent.sort(function(a, b){
+
                 return new Date(b.createdAt || b.updatedAt) - new Date(a.createdAt || a.updatedAt) ;
             })
         }  
@@ -130,7 +135,8 @@ exports.getTweets = async(req, res)=>{
 
 //Like/unlike Tweet
 exports.likeTweet = async(req, res)=>{
-    const {userId} =req.body;
+    const userId =req.user.id;
+
     const tweetId = req.params.tweetId;
 
     try{
@@ -223,7 +229,9 @@ exports.createUser= async(req, res)=>{
 
  //function to make retweet
  exports.makeRetweet = async(req, res)=>{
-    const {tweetId, userId} = req.body;
+    const {tweetId} = req.body;
+    const userId =req.user.id;
+
 
     try{
     //Find the tweet by using the tweet id
@@ -273,7 +281,9 @@ exports.createUser= async(req, res)=>{
 
 //Reply
  exports.makeReply = async(req, res) =>{
-    const {userId, body, tweetId, media, taggedUsers} = req.body;
+    const {body, tweetId, media, taggedUsers} = req.body;
+    const userId =req.user.id;
+
     //Checking on the content of the comment
     if(!body&& !media && !taggedUsers){
         return res.status(422).json({error: "Please enter data to reply!"});
