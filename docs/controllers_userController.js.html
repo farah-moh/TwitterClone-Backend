@@ -34,20 +34,43 @@ const AppError = require('../utils/appError');
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
 const sendEmail = require('./../utils/email_info');
-
+const { _infoTransformers } = require('passport/lib');
+const authentication = require('./authentication')
 
 /**
  * @description - Takes user ID and and returns its info
- * @param {Object} userId - The user's ID
+ * @param {object} userId - The user's ID
+ * @param {string} type - The type of the page
  * @returns {Object} User object
  */
-const getProfile = async (userId) => {
+const getProfile = async (userId,type) => {
     const userProfile = await user.findById(userId);
-    // console.log('farah');
     const followingCount = userProfile.following.length;
     const followersCount = userProfile.followers.length;
+    const likes = userProfile.likedTweets;
+    const returnedUser = (({ username, name, birthdate, tweets, protectedTweets,country,city,bio,website,createdAt }) => ({ username, name, birthdate, tweets, protectedTweets,country,city,bio,website,createdAt }))(userProfile);
 
-    const returnedUser = (({ username, name, birthdate, tweets, protectedTweets }) => ({ username, name, birthdate, tweets, protectedTweets }))(userProfile);
+    if(type==='profile') {
+        let no_replies = returnedUser.tweets;
+        no_replies = no_replies.filter(x => x.isReply===false);
+        returnedUser["tweets"] = no_replies;
+    }
+    //needs testing
+    else if(type==='media') {
+        let imageTweet = returnedUser.tweets.find(x=> x.media.length > 0);
+        let images = [];
+        for(let tweet in imageTweet) {
+            for(let image of tweet.media) {
+                images.push(image);
+            }
+        }
+        returnedUser["media"] = images;
+        delete returnedUser.tweets;
+    }
+    else if(type==='likes') {
+        returnedUser["likes"] = likes;
+        delete returnedUser.tweets;
+    }
     returnedUser["followingCount"] = followingCount;
     returnedUser["followersCount"] = followersCount;
     return returnedUser;
@@ -60,14 +83,15 @@ const getProfile = async (userId) => {
 */
 /**
  * @description - compares the ID of the sent user and the token id and return the correct data
- * @param {string} notMeId - The ID of the sent user
- * @param {string} meId - The ID of the token user
- * @returns {Object} The correct user data
+ * @param {object} notMeId - The ID of the sent user
+ * @param {object} meId - The ID of the token user
+ * @param {string} type - The type of the page
+ * @returns {object} - The user object
  */
-const getUser = async (notMeId,meId)  => {
+const getUser = async (notMeId,meId,type)  => {
 
     //getting profile
-    let notMe = await getProfile(notMeId);
+    let notMe = await getProfile(notMeId,type);
 
     //checking if I am following user
     let mutuals = await user.findById(meId).select('following');
@@ -78,80 +102,133 @@ const getUser = async (notMeId,meId)  => {
     followsMeProp = followsMeProp.followers.find(x => x._id === notMeId);
 
     //checking if their profile is protected
-    let protectedNotMe = notMe.protectedTweets;
+    let isProtected = notMe.protectedTweets;
     
     let followsMe = followsMeProp? true:false;
     notMe["followsMe"] = followsMe;
     let returnedUser;
     
     //if private user &amp; I don't follow him, don't send tweets
-    if(protectedNotMe &amp;&amp; !mutuals) {
+    if(isProtected &amp;&amp; !mutuals) {
         //removing tweets from returnedUser
         returnedUser = 
-        (({ username, name, birthdate, followingCount, followersCount, followsMe}) => 
-        ({ username, name, birthdate,followingCount, followersCount, followsMe}))(notMe);
+        (({ username, name, birthdate, followingCount, followersCount, followsMe, protectedTweets,country,city,bio,website,createdAt}) => 
+        ({ username, name, birthdate,followingCount, followersCount, followsMe, protectedTweets,country,city,bio,website,createdAt}))(notMe);
         //returnedUser = await notMe.select('-tweets');
     }
     else {
         returnedUser = notMe;
     }
+    returnedUser["isMe"] = false;
     return returnedUser;
 };
 /**
- * @description - takes user Token id and returns its user
- * @param {string} meId - The ID of the token user
- * @returns {Object} user object
+ * @description - takes user id and type and returns attribute isMe
+ * @param {object} meId - My ID
+ * @param {object} type - The type of the page
+ * @returns {object} - The user object
  */
-const getMe = async meId => {
-    const me = await getProfile(meId);
+const getMe = async (meId,type) => {
+    const me = await getProfile(meId,type);
+    me["isMe"] = true;
     return me;
 };
 
-exports.getProfile = catchAsync(async (req, res, next) => {
+/**
+ * @description - Takes the requested username and the logged id and the type and returns the appropriate return tweets
+ * @param {object} sentUsername - The sent username
+ * @param {object} meId - My ID
+ * @param {String} type - The type of the page
+ * @param {middleware} next - next fucntion
+ * @returns {Object} - The user object 
+ */
+const preGetProfile = async (sentUsername,meId, type, next) => {
     //getting user in route params
-    const sentUser = req.params.username;
-    let sentUserId = await user.findOne({'username': sentUser}).select('_id');
-    if(!sentUserId) return next(new AppError('This username does not exists.',401));
+    // console.log(type);
+    let sentUserId = await user.findOne({'username': sentUsername}).select('_id');
+    if(!sentUserId) throw new AppError('This username does not exists.',401);
     sentUserId = sentUserId._id.toString();
 
     //getting my id from req user (protect)
-    const meId = req.user.id;
     let me = await user.findById(meId).select('username');
     me = me.username;
 
     let currentUser;
     //checking if I am visiting my profile, or another user's profile
-    if(me === sentUser) {
-        currentUser = await getMe(meId);
+    if(me === sentUsername) {
+        currentUser = await getMe(meId,type);
     }
     else {
-        currentUser = await getUser(sentUserId,meId);
+        currentUser = await getUser(sentUserId,meId,type);
     }
+    return currentUser;
+};
+exports.preGetProfile = preGetProfile;
+
+
+exports.getProfileMedia = catchAsync(async (req, res, next) => {
+    //getting user in route params
+    const sentUser = req.params.username;
+    const meId = req.user.id;
+
+    const currentUser = await preGetProfile(sentUser,meId,'media');
 
     res.status(200).json(currentUser);
 });
+
+exports.getProfileLikes = catchAsync(async (req, res, next) => {
+    //getting user in route params
+    const sentUser = req.params.username;
+    const meId = req.user.id;
+
+    const currentUser = await preGetProfile(sentUser,meId,'likes');
+
+    res.status(200).json(currentUser);
+});
+
+exports.getProfileWithReplies = catchAsync(async (req, res, next) => {
+    //getting user in route params
+    const sentUser = req.params.username;
+    const meId = req.user.id;
+
+    const currentUser = await preGetProfile(sentUser,meId,'replies');
+
+    res.status(200).json(currentUser);
+});
+
+exports.getProfile = catchAsync(async (req, res, next) => {
+    //getting user in route params
+    const sentUser = req.params.username;
+    const meId = req.user.id;
+
+    const currentUser = await preGetProfile(sentUser,meId,'profile');
+
+    res.status(200).json(currentUser);
+});
+
 /**
- * @description - Takes user ID and returns the correct data for edit profile
- * @param {string} userId - The user ID
- * @returns {Object} user object
+ * @description - Takes user ID and returns its info for editing
+ * @param {string} userId - The user ID for editing
+ * @returns {object} - The user info to edit
  */
-const getEditProfile = async (userId) => {
+const getEditProfileFunc = async (userId) => {
     const userProfile = await user.findById(userId).select('image headerImage name bio country city website birthdate');
     return userProfile;
 };
+exports.getEditProfileFunc = getEditProfileFunc;
 
 exports.getEditProfile = catchAsync(async (req, res, next) => {
-    const userProfile = await getEditProfile(req.user.id);
+    const userProfile = await getEditProfileFunc(req.user.id);
     res.status(200).json(userProfile);
 });
 
 /**
- * @description - Update the profile data
- * @param {string} userId - The user ID
- * @param {string} newInfo - The body containing the new info
- * @returns {Object} user object
+ * @description - takes user id and info and update the setting
+ * @param {string} userId - The user ID to be modified
+ * @param {object} newInfo - The new info for modification
+ * @returns {Object} - The user object to edit
  */
-const editProfile = async (userId, newInfo) => {
+const editProfileFunc = async (userId, newInfo) => {
 
     const editedUser = await user.findByIdAndUpdate(userId, newInfo, {
         new: true
@@ -159,9 +236,11 @@ const editProfile = async (userId, newInfo) => {
     if (!editedUser) throw new AppError('No user with this id', 404);
     return editedUser;
 };
+exports.editProfileFunc = editProfileFunc;
+
 
 exports.editProfile = catchAsync(async (req, res, next) => {
-    const editedUser = await editProfile(req.user._id, req.body);
+    const editedUser = await editProfileFunc(req.user._id, req.body);
     res.status(200).json(editedUser);
   });
 
@@ -177,13 +256,13 @@ exports.editProfile = catchAsync(async (req, res, next) => {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#changePasswordFunc">changePasswordFunc</a></li><li><a href="global.html#createUser">createUser</a></li><li><a href="global.html#editProfile">editProfile</a></li><li><a href="global.html#getEditProfile">getEditProfile</a></li><li><a href="global.html#getMe">getMe</a></li><li><a href="global.html#getProfile">getProfile</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#protectService">protectService</a></li><li><a href="global.html#resetPasswordFunc">resetPasswordFunc</a></li><li><a href="global.html#sendForgotPasswordToken">sendForgotPasswordToken</a></li><li><a href="global.html#validateLogin">validateLogin</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#changePasswordFunc">changePasswordFunc</a></li><li><a href="global.html#createUser">createUser</a></li><li><a href="global.html#editProfileFunc">editProfileFunc</a></li><li><a href="global.html#getEditProfileFunc">getEditProfileFunc</a></li><li><a href="global.html#getMe">getMe</a></li><li><a href="global.html#getProfile">getProfile</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#preGetProfile">preGetProfile</a></li><li><a href="global.html#protectService">protectService</a></li><li><a href="global.html#resetPasswordFunc">resetPasswordFunc</a></li><li><a href="global.html#sendForgotPasswordToken">sendForgotPasswordToken</a></li><li><a href="global.html#validateLogin">validateLogin</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Sun Apr 24 2022 21:51:34 GMT+0200 (Eastern European Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Mon Apr 25 2022 18:27:57 GMT+0200 (Eastern European Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -253,7 +253,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="controllers_authentication.js.html">controllers/authentication.js</a>, <a href="controllers_authentication.js.html#line265">line 265</a>
+        <a href="controllers_authentication.js.html">controllers/authentication.js</a>, <a href="controllers_authentication.js.html#line266">line 266</a>
     </li></ul></dd>
     
 
@@ -412,7 +412,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="controllers_authentication.js.html">controllers/authentication.js</a>, <a href="controllers_authentication.js.html#line24">line 24</a>
+        <a href="controllers_authentication.js.html">controllers/authentication.js</a>, <a href="controllers_authentication.js.html#line25">line 25</a>
     </li></ul></dd>
     
 
@@ -470,7 +470,7 @@
     
 
     
-    <h4 class="name" id="editProfile"><span class="type-signature">(async) </span>editProfile<span class="signature">(userId, newInfo)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="editProfileFunc"><span class="type-signature">(async) </span>editProfileFunc<span class="signature">(userId, newInfo)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -479,7 +479,7 @@
 
 <div class="description">
     <ul>
-<li>Update the profile data</li>
+<li>takes user id and info and update the setting</li>
 </ul>
 </div>
 
@@ -532,7 +532,7 @@
 
             
 
-            <td class="description last"><p>The user ID</p></td>
+            <td class="description last"><p>The user ID to be modified</p></td>
         </tr>
 
     
@@ -545,7 +545,7 @@
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">object</span>
 
 
             
@@ -555,7 +555,7 @@
 
             
 
-            <td class="description last"><p>The body containing the new info</p></td>
+            <td class="description last"><p>The new info for modification</p></td>
         </tr>
 
     
@@ -596,7 +596,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="controllers_userController.js.html">controllers/userController.js</a>, <a href="controllers_userController.js.html#line126">line 126</a>
+        <a href="controllers_userController.js.html">controllers/userController.js</a>, <a href="controllers_userController.js.html#line203">line 203</a>
     </li></ul></dd>
     
 
@@ -625,7 +625,9 @@
 
         
 <div class="param-desc">
-    <p>user object</p>
+    <ul>
+<li>The user object to edit</li>
+</ul>
 </div>
 
 
@@ -654,7 +656,7 @@
     
 
     
-    <h4 class="name" id="getEditProfile"><span class="type-signature">(async) </span>getEditProfile<span class="signature">(userId)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="getEditProfileFunc"><span class="type-signature">(async) </span>getEditProfileFunc<span class="signature">(userId)</span><span class="type-signature"> &rarr; {object}</span></h4>
     
 
     
@@ -663,7 +665,7 @@
 
 <div class="description">
     <ul>
-<li>Takes user ID and returns the correct data for edit profile</li>
+<li>Takes user ID and returns its info for editing</li>
 </ul>
 </div>
 
@@ -716,7 +718,7 @@
 
             
 
-            <td class="description last"><p>The user ID</p></td>
+            <td class="description last"><p>The user ID for editing</p></td>
         </tr>
 
     
@@ -757,7 +759,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="controllers_userController.js.html">controllers/userController.js</a>, <a href="controllers_userController.js.html#line110">line 110</a>
+        <a href="controllers_userController.js.html">controllers/userController.js</a>, <a href="controllers_userController.js.html#line186">line 186</a>
     </li></ul></dd>
     
 
@@ -786,7 +788,9 @@
 
         
 <div class="param-desc">
-    <p>user object</p>
+    <ul>
+<li>The user info to edit</li>
+</ul>
 </div>
 
 
@@ -797,7 +801,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
     </dd>
@@ -815,7 +819,7 @@
     
 
     
-    <h4 class="name" id="getMe"><span class="type-signature">(async) </span>getMe<span class="signature">(meId)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="getMe"><span class="type-signature">(async) </span>getMe<span class="signature">(meId, type)</span><span class="type-signature"> &rarr; {object}</span></h4>
     
 
     
@@ -824,7 +828,7 @@
 
 <div class="description">
     <ul>
-<li>takes user Token id and returns its user</li>
+<li>takes user id and type and returns attribute isMe</li>
 </ul>
 </div>
 
@@ -867,7 +871,7 @@
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">object</span>
 
 
             
@@ -877,7 +881,30 @@
 
             
 
-            <td class="description last"><p>The ID of the token user</p></td>
+            <td class="description last"><p>My ID</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The type of the page</p></td>
         </tr>
 
     
@@ -918,7 +945,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="controllers_userController.js.html">controllers/userController.js</a>, <a href="controllers_userController.js.html#line77">line 77</a>
+        <a href="controllers_userController.js.html">controllers/userController.js</a>, <a href="controllers_userController.js.html#line103">line 103</a>
     </li></ul></dd>
     
 
@@ -947,7 +974,9 @@
 
         
 <div class="param-desc">
-    <p>user object</p>
+    <ul>
+<li>The user object</li>
+</ul>
 </div>
 
 
@@ -958,7 +987,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
     </dd>
@@ -976,7 +1005,7 @@
     
 
     
-    <h4 class="name" id="getProfile"><span class="type-signature">(async) </span>getProfile<span class="signature">(userId)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="getProfile"><span class="type-signature">(async) </span>getProfile<span class="signature">(userId, type)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -1028,7 +1057,7 @@
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
             
@@ -1039,6 +1068,29 @@
             
 
             <td class="description last"><p>The user's ID</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The type of the page</p></td>
         </tr>
 
     
@@ -1079,7 +1131,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="controllers_userController.js.html">controllers/userController.js</a>, <a href="controllers_userController.js.html#line16">line 16</a>
+        <a href="controllers_userController.js.html">controllers/userController.js</a>, <a href="controllers_userController.js.html#line18">line 18</a>
     </li></ul></dd>
     
 
@@ -1137,7 +1189,7 @@
     
 
     
-    <h4 class="name" id="getUser"><span class="type-signature">(async) </span>getUser<span class="signature">(notMeId, meId)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="getUser"><span class="type-signature">(async) </span>getUser<span class="signature">(notMeId, meId, type)</span><span class="type-signature"> &rarr; {object}</span></h4>
     
 
     
@@ -1189,7 +1241,7 @@
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">object</span>
 
 
             
@@ -1212,7 +1264,7 @@
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">object</span>
 
 
             
@@ -1223,6 +1275,29 @@
             
 
             <td class="description last"><p>The ID of the token user</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The type of the page</p></td>
         </tr>
 
     
@@ -1263,7 +1338,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="controllers_userController.js.html">controllers/userController.js</a>, <a href="controllers_userController.js.html#line39">line 39</a>
+        <a href="controllers_userController.js.html">controllers/userController.js</a>, <a href="controllers_userController.js.html#line63">line 63</a>
     </li></ul></dd>
     
 
@@ -1292,7 +1367,241 @@
 
         
 <div class="param-desc">
-    <p>The correct user data</p>
+    <ul>
+<li>The user object</li>
+</ul>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="preGetProfile"><span class="type-signature">(async) </span>preGetProfile<span class="signature">(sentUsername, meId, type, next)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <ul>
+<li>Takes the requested username and the logged id and the type and returns the appropriate return tweets</li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>sentUsername</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The sent username</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>meId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>My ID</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The type of the page</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>next</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">middleware</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>next fucntion</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="controllers_userController.js.html">controllers/userController.js</a>, <a href="controllers_userController.js.html#line117">line 117</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <ul>
+<li>The user object</li>
+</ul>
 </div>
 
 
@@ -1422,7 +1731,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="controllers_authentication.js.html">controllers/authentication.js</a>, <a href="controllers_authentication.js.html#line297">line 297</a>
+        <a href="controllers_authentication.js.html">controllers/authentication.js</a>, <a href="controllers_authentication.js.html#line298">line 298</a>
     </li></ul></dd>
     
 
@@ -1584,7 +1893,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="controllers_authentication.js.html">controllers/authentication.js</a>, <a href="controllers_authentication.js.html#line215">line 215</a>
+        <a href="controllers_authentication.js.html">controllers/authentication.js</a>, <a href="controllers_authentication.js.html#line216">line 216</a>
     </li></ul></dd>
     
 
@@ -1768,7 +2077,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="controllers_authentication.js.html">controllers/authentication.js</a>, <a href="controllers_authentication.js.html#line179">line 179</a>
+        <a href="controllers_authentication.js.html">controllers/authentication.js</a>, <a href="controllers_authentication.js.html#line180">line 180</a>
     </li></ul></dd>
     
 
@@ -1930,7 +2239,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="controllers_authentication.js.html">controllers/authentication.js</a>, <a href="controllers_authentication.js.html#line113">line 113</a>
+        <a href="controllers_authentication.js.html">controllers/authentication.js</a>, <a href="controllers_authentication.js.html#line114">line 114</a>
     </li></ul></dd>
     
 
@@ -3404,13 +3713,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#changePasswordFunc">changePasswordFunc</a></li><li><a href="global.html#createUser">createUser</a></li><li><a href="global.html#editProfile">editProfile</a></li><li><a href="global.html#getEditProfile">getEditProfile</a></li><li><a href="global.html#getMe">getMe</a></li><li><a href="global.html#getProfile">getProfile</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#protectService">protectService</a></li><li><a href="global.html#resetPasswordFunc">resetPasswordFunc</a></li><li><a href="global.html#sendForgotPasswordToken">sendForgotPasswordToken</a></li><li><a href="global.html#validateLogin">validateLogin</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#changePasswordFunc">changePasswordFunc</a></li><li><a href="global.html#createUser">createUser</a></li><li><a href="global.html#editProfileFunc">editProfileFunc</a></li><li><a href="global.html#getEditProfileFunc">getEditProfileFunc</a></li><li><a href="global.html#getMe">getMe</a></li><li><a href="global.html#getProfile">getProfile</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#preGetProfile">preGetProfile</a></li><li><a href="global.html#protectService">protectService</a></li><li><a href="global.html#resetPasswordFunc">resetPasswordFunc</a></li><li><a href="global.html#sendForgotPasswordToken">sendForgotPasswordToken</a></li><li><a href="global.html#validateLogin">validateLogin</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Sun Apr 24 2022 21:51:34 GMT+0200 (Eastern European Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Mon Apr 25 2022 18:27:57 GMT+0200 (Eastern European Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -9,7 +9,12 @@ const sendEmail = require('./../utils/email_info');
 const { _infoTransformers } = require('passport/lib');
 const authentication = require('./authentication')
 
-
+/**
+ * @description - Takes user ID and and returns its info
+ * @param {object} userId - The user's ID
+ * @param {string} type - The type of the page
+ * @returns {Object} User object
+ */
 const getProfile = async (userId,type) => {
     const userProfile = await user.findById(userId);
     const followingCount = userProfile.following.length;
@@ -48,7 +53,13 @@ const getProfile = async (userId,type) => {
 2- check follows me
 3- check protected
 */
-
+/**
+ * @description - compares the ID of the sent user and the token id and return the correct data
+ * @param {object} notMeId - The ID of the sent user
+ * @param {object} meId - The ID of the token user
+ * @param {string} type - The type of the page
+ * @returns {object} - The user object
+ */
 const getUser = async (notMeId,meId,type)  => {
 
     //getting profile
@@ -83,13 +94,26 @@ const getUser = async (notMeId,meId,type)  => {
     returnedUser["isMe"] = false;
     return returnedUser;
 };
-
+/**
+ * @description - takes user id and type and returns attribute isMe
+ * @param {object} meId - My ID
+ * @param {object} type - The type of the page
+ * @returns {object} - The user object
+ */
 const getMe = async (meId,type) => {
     const me = await getProfile(meId,type);
     me["isMe"] = true;
     return me;
 };
 
+/**
+ * @description - Takes the requested username and the logged id and the type and returns the appropriate return tweets
+ * @param {object} sentUsername - The sent username
+ * @param {object} meId - My ID
+ * @param {String} type - The type of the page
+ * @param {middleware} next - next fucntion
+ * @returns {Object} - The user object 
+ */
 const preGetProfile = async (sentUsername,meId, type, next) => {
     //getting user in route params
     // console.log(type);
@@ -154,7 +178,11 @@ exports.getProfile = catchAsync(async (req, res, next) => {
     res.status(200).json(currentUser);
 });
 
-
+/**
+ * @description - Takes user ID and returns its info for editing
+ * @param {string} userId - The user ID for editing
+ * @returns {object} - The user info to edit
+ */
 const getEditProfileFunc = async (userId) => {
     const userProfile = await user.findById(userId).select('image headerImage name bio country city website birthdate');
     return userProfile;
@@ -165,7 +193,13 @@ exports.getEditProfile = catchAsync(async (req, res, next) => {
     const userProfile = await getEditProfileFunc(req.user.id);
     res.status(200).json(userProfile);
 });
-  
+
+/**
+ * @description - takes user id and info and update the setting
+ * @param {string} userId - The user ID to be modified
+ * @param {object} newInfo - The new info for modification
+ * @returns {Object} - The user object to edit
+ */
 const editProfileFunc = async (userId, newInfo) => {
 
     const editedUser = await user.findByIdAndUpdate(userId, newInfo, {
