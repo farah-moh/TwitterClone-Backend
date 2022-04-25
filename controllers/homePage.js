@@ -109,9 +109,15 @@ exports.getTweets = async(req, res)=>{
                 
                 }
             }
-        }   
+        }
+        let SortedArray = [];
+        if(dataSent.length>0){
+            sortedArray = dataSent.sort(function(a, b){
+                return new Date(b.createdAt || b.updatedAt) - new Date(a.createdAt || a.updatedAt) ;
+            })
+        }  
         //3ayzeen retweets terga3?
-        return res.status(200).json({data: dataSent, succes: "true"});
+        return res.status(200).json({data: sortedArray, succes: "true"});
     }
     catch (err) {
         console.log(err)
