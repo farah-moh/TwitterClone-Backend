@@ -1,17 +1,29 @@
 const express = require('express')
 const app = express()
+require('dotenv').config();
 app.use(express.json()) 
 const AppError = require('./utils/appError')
 const authenticationRoute = require('./routes/authenticationRoute')
 const messagesRoute= require("./routes/messagesRoute");
-require('dotenv').config();
+const settingsRoute = require('./routes/settingsRoute');
 const homePage = require('./routes/postHomePage')
+const userRoute = require('./routes/userRoute')
+
+const cors = require('cors');
+const corsOptions = {
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type,Authorization,X-Forwarded-For',
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+  };
+  app.use(cors(corsOptions));
 
 app.use('/', authenticationRoute);
 app.use('/home', homePage);
-
-
-app.use('/', authenticationRoute);
+app.use('/settings', settingsRoute);
+app.use('/:username',userRoute)
 app.use('/messages/:receiver_id', messagesRoute);
 
 app.all('*', (req, res, next) => {

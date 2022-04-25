@@ -171,7 +171,7 @@ describe('Signup function',()=>{
         authentication.signUp(request, response, (err) => {
           try {
             expect(err).toEqual(expect.anything())
-            expect(err.name).toEqual('ValidationError')
+            expect(err.name).toEqual('Error')
             done()
           } catch (error) {
             done(error)
