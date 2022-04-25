@@ -10,5 +10,8 @@ const router = express.Router({mergeParams: true});
 router.use(authenticationController.protect);
 
 router.get('/',userController.getProfile);
+router.get('/with_replies',userController.getProfileWithReplies);
+router.get('/media',userController.getProfileMedia);
+router.get('/likes',userController.getProfileLikes);
 
 module.exports = router;
