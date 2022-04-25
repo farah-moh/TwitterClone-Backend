@@ -25,6 +25,7 @@
     "passport": "^0.5.2",
     "passport-facebook": "^3.0.0",
     "passport-facebook-token": "^4.0.0",
+    "sinon": "^13.0.2",
     "swagger-jsdoc": "^6.2.1",
     "swagger-ui-express": "^4.3.0",
     "unique-username-generator": "^1.0.1",
