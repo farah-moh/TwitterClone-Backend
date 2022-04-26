@@ -4,6 +4,23 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const sendEmail = require('./../utils/email_info');
 
+const changeUsername= async(id,username) => {
+  const User = await user.findOneAndUpdate({_id: id},{username: username});
+  return User;
+}
+exports.changeUsername = changeUsername;
+
+const userById= async(id) => {
+  const User = await user.findOne({_id: id});
+  return User;
+}
+exports.userById = userById;
+const userByEmail= async(Email) => {
+  const User = await user.findOne({email: Email});
+  return User;
+}
+exports.userByEmail = userByEmail;
+
 exports.updateUsername= catchAsync(async (req, res, next) => {
 if(req.body.username.trim()=="")
 {
@@ -13,7 +30,7 @@ if(req.body.username.trim()=="")
       );
 }
 try {
-const User = await user.findOneAndUpdate({_id: req.user.id},{username: req.body.username});
+const User = await changeUsername(req.user.id,req.body.username); 
 await User.save();
 
 return res.status(200).json({status: 'Success', success: true});
@@ -28,7 +45,7 @@ catch (err) {
 );
 
 exports.updateEmail = catchAsync(async (req, res, next) => {
-    const User = await user.findOne({_id: req.user.id});
+    const User = await userById(req.user.id);
     if(req.body.email.trim()=="")
     {
         throw new AppError(
@@ -36,7 +53,7 @@ exports.updateEmail = catchAsync(async (req, res, next) => {
             400
           );
     }
-    const dupEmail = await user.findOne({email: req.body.email});
+    const dupEmail = await userByEmail(req.body.email);
     if(dupEmail)
     {
         throw new AppError(
@@ -82,7 +99,7 @@ exports.updateEmail = catchAsync(async (req, res, next) => {
 });
 
 exports.protectTweets = catchAsync(async (req, res, next) => {
-    const User = await user.findOne({_id: req.user.id});
+    const User = await userById(req.user.id);
     if(User.protectedTweets==true)
     {
     User.protectedTweets=false;
@@ -105,13 +122,13 @@ exports.protectTweets = catchAsync(async (req, res, next) => {
 });
 
 exports.pushNotifications = catchAsync(async (req, res, next) => {
-    const User = await user.findOne({_id: req.user.id});
+    const User = await userById(req.user.id);
 
     if(User.notificationFlag==true)
     User.notificationFlag=false;
     else
     User.notificationFlag=true;
-
+    
     try {
         await User.save();
         return res.status(200).json({status: 'Success', success: true});
@@ -125,8 +142,7 @@ exports.pushNotifications = catchAsync(async (req, res, next) => {
 });
 
 exports.changeTheme = catchAsync(async (req, res, next) => {
-    const User = await user.findOne({_id: req.user.id});
-    console.log(User.theme);
+    const User = await userById(req.user.id);
     if (req.body.theme=="light")
     {
        User.theme="light";
