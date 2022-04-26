@@ -426,6 +426,7 @@ exports.getRetweets = async(req, res) =>{
 
         //Getting userRetweeters 
         let usersRetweeters = retweetedTweet.retweeters;
+        console.log(usersRetweeters)
         let dataUsers = [];
         if(usersRetweeters)
             dataUsers = getRetweetsFunc(usersRetweeters);
