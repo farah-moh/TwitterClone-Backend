@@ -943,7 +943,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="controllers_homePage.js.html">controllers/homePage.js</a>, <a href="controllers_homePage.js.html#line420">line 420</a>
+        <a href="controllers_homePage.js.html">controllers/homePage.js</a>, <a href="controllers_homePage.js.html#line451">line 451</a>
     </li></ul></dd>
     
 
@@ -1495,7 +1495,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="controllers_homePage.js.html">controllers/homePage.js</a>, <a href="controllers_homePage.js.html#line510">line 510</a>
+        <a href="controllers_homePage.js.html">controllers/homePage.js</a>, <a href="controllers_homePage.js.html#line541">line 541</a>
     </li></ul></dd>
     
 
@@ -1553,7 +1553,7 @@
     
 
     
-    <h4 class="name" id="getRetweets"><span class="type-signature"></span>getRetweets<span class="signature">(req, res)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="getRetweetsFunc"><span class="type-signature">(async) </span>getRetweetsFunc<span class="signature">(usersRetweeters)</span><span class="type-signature"></span></h4>
     
 
     
@@ -1597,36 +1597,13 @@
 
         <tr>
             
-                <td class="name"><code>req</code></td>
+                <td class="name"><code>usersRetweeters</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>res</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
+<span class="param-type">Object</span>
 
 
             
@@ -1677,7 +1654,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="controllers_homePage.js.html">controllers/homePage.js</a>, <a href="controllers_homePage.js.html#line375">line 375</a>
+        <a href="controllers_homePage.js.html">controllers/homePage.js</a>, <a href="controllers_homePage.js.html#line393">line 393</a>
     </li></ul></dd>
     
 
@@ -1710,18 +1687,6 @@
 </div>
 
 
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
 
     
 
@@ -1859,7 +1824,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="controllers_homePage.js.html">controllers/homePage.js</a>, <a href="controllers_homePage.js.html#line464">line 464</a>
+        <a href="controllers_homePage.js.html">controllers/homePage.js</a>, <a href="controllers_homePage.js.html#line495">line 495</a>
     </li></ul></dd>
     
 
@@ -2490,7 +2455,7 @@
     
 
     
-    <h4 class="name" id="makeReply"><span class="type-signature"></span>makeReply<span class="signature">(req, res)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="makeReplyFunc"><span class="type-signature">(async) </span>makeReplyFunc<span class="signature">(userId, body, tweetId, media, taggedUsers)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -2534,13 +2499,13 @@
 
         <tr>
             
-                <td class="name"><code>req</code></td>
+                <td class="name"><code>userId</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">*</span>
+<span class="param-type">String</span>
 
 
             
@@ -2557,13 +2522,82 @@
 
         <tr>
             
-                <td class="name"><code>res</code></td>
+                <td class="name"><code>body</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">*</span>
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>tweetId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>media</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>taggedUsers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
 
 
             
@@ -2614,7 +2648,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="controllers_homePage.js.html">controllers/homePage.js</a>, <a href="controllers_homePage.js.html#line312">line 312</a>
+        <a href="controllers_homePage.js.html">controllers/homePage.js</a>, <a href="controllers_homePage.js.html#line321">line 321</a>
     </li></ul></dd>
     
 
@@ -2642,10 +2676,6 @@
 <h5>Returns:</h5>
 
         
-<div class="param-desc">
-    <p>returns the status of the tweet and the tweet which the user replied on</p>
-</div>
-
 
 
 <dl>
@@ -2672,7 +2702,7 @@
     
 
     
-    <h4 class="name" id="makeRetweet"><span class="type-signature"></span>makeRetweet<span class="signature">(req, res)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="makeRetweetFunc"><span class="type-signature">(async) </span>makeRetweetFunc<span class="signature">(tweetId, userId)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -2716,13 +2746,13 @@
 
         <tr>
             
-                <td class="name"><code>req</code></td>
+                <td class="name"><code>tweetId</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">*</span>
+<span class="param-type">String</span>
 
 
             
@@ -2739,13 +2769,13 @@
 
         <tr>
             
-                <td class="name"><code>res</code></td>
+                <td class="name"><code>userId</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">*</span>
+<span class="param-type">String</span>
 
 
             
@@ -2824,10 +2854,6 @@
 <h5>Returns:</h5>
 
         
-<div class="param-desc">
-    <p>returns the status (failed/success) and the retweeted tweet</p>
-</div>
-
 
 
 <dl>
@@ -5351,13 +5377,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#changePasswordFunc">changePasswordFunc</a></li><li><a href="global.html#createUser">createUser</a></li><li><a href="global.html#editProfileFunc">editProfileFunc</a></li><li><a href="global.html#getEditProfileFunc">getEditProfileFunc</a></li><li><a href="global.html#getLikers">getLikers</a></li><li><a href="global.html#getMe">getMe</a></li><li><a href="global.html#getProfile">getProfile</a></li><li><a href="global.html#getReplies">getReplies</a></li><li><a href="global.html#getRetweets">getRetweets</a></li><li><a href="global.html#getTaggedUsers">getTaggedUsers</a></li><li><a href="global.html#getTweets">getTweets</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#likeTweet">likeTweet</a></li><li><a href="global.html#makeReply">makeReply</a></li><li><a href="global.html#makeRetweet">makeRetweet</a></li><li><a href="global.html#postTweet">postTweet</a></li><li><a href="global.html#preGetProfile">preGetProfile</a></li><li><a href="global.html#protectService">protectService</a></li><li><a href="global.html#resetPasswordFunc">resetPasswordFunc</a></li><li><a href="global.html#sendForgotPasswordToken">sendForgotPasswordToken</a></li><li><a href="global.html#validateLogin">validateLogin</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#changePasswordFunc">changePasswordFunc</a></li><li><a href="global.html#createUser">createUser</a></li><li><a href="global.html#editProfileFunc">editProfileFunc</a></li><li><a href="global.html#getEditProfileFunc">getEditProfileFunc</a></li><li><a href="global.html#getLikers">getLikers</a></li><li><a href="global.html#getMe">getMe</a></li><li><a href="global.html#getProfile">getProfile</a></li><li><a href="global.html#getReplies">getReplies</a></li><li><a href="global.html#getRetweetsFunc">getRetweetsFunc</a></li><li><a href="global.html#getTaggedUsers">getTaggedUsers</a></li><li><a href="global.html#getTweets">getTweets</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#likeTweet">likeTweet</a></li><li><a href="global.html#makeReplyFunc">makeReplyFunc</a></li><li><a href="global.html#makeRetweetFunc">makeRetweetFunc</a></li><li><a href="global.html#postTweet">postTweet</a></li><li><a href="global.html#preGetProfile">preGetProfile</a></li><li><a href="global.html#protectService">protectService</a></li><li><a href="global.html#resetPasswordFunc">resetPasswordFunc</a></li><li><a href="global.html#sendForgotPasswordToken">sendForgotPasswordToken</a></li><li><a href="global.html#validateLogin">validateLogin</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Mon Apr 25 2022 21:48:22 GMT+0200 (Eastern European Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Tue Apr 26 2022 02:16:48 GMT+0200 (Eastern European Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
