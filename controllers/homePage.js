@@ -245,28 +245,23 @@ exports.createUser= async(req, res)=>{
     return res.status(200).json({message: "Retweeted successfully", tweets: tweets, users: users});
  }
 
-/**
- * @description This function is used to retweet a tweet and saves user id in the database
- * @param {*} req 
- * @param {*} res 
- * @returns {Object} returns the status (failed/success) and the retweeted tweet 
- */
 
- exports.makeRetweet = async(req, res)=>{
-    const {tweetId} = req.body;
-    const userId =req.user.id;
+ /**
+  * @description This function is used to retweet a tweet and saves user id in the database
+  * @param {String} tweetId 
+  * @param {String} userId 
+  * @returns {Object}
+  */
+const makeRetweetFunc = async(tweetId, userId)=>{
 
-
-    try{
     //Find the tweet by using the tweet id
         let retweetedTweet = await tweet.findById(tweetId).populate('user').populate({ path: 'body.with', select: '_id name' });
         
         //If the post is deleted or not found
         if(!retweetedTweet){   
-            return res.status(404).json({ error: 'Tweet not found' })
+            throw new AppError('No tweet with this id', 500);
         }
-
-        
+   
         //Search if this user retweeted this tweet
         const isFoundUser = retweetedTweet.retweeters.indexOf(userId);
 
@@ -284,17 +279,25 @@ exports.createUser= async(req, res)=>{
 
         //User id is not found
         if(!userRetweeted){   
-            return res.status(404).json({ error: 'User not found' })
+            throw new AppError('No user with this id', 500);
         }
 
         //Adding the retweet to the user 
         userRetweeted.retweetedTweets.push(tweetId);
         console.log( userRetweeted.retweetedTweets);
         await userRetweeted.save();
+        return userRetweeted;
+}
+ exports.makeRetweetFunc =makeRetweetFunc
 
+ exports.makeRetweet = async(req, res)=>{
+    const {tweetId} = req.body;
+    const userId =req.user.id;
 
+    try{    
+        const userRetweeted = await makeRetweetFunc(tweetId, userId);
         //Retweeted successfully
-        return res.status(200).json({message: "Retweeted successfully", tweet: retweetedTweet, userRetweeted: userRetweeted});
+        return res.status(200).json({message: "Retweeted successfully",  userRetweeted: userRetweeted});
     }
     catch (err) {
         console.log(err)
@@ -303,12 +306,54 @@ exports.createUser= async(req, res)=>{
 
  } 
 
+
+
 /**
  * @description This function is used to make reply on a tweet using tweet it sent in the parameter
- * @param {*} req 
- * @param {*} res 
- * @returns {Object} returns the status of the tweet and the tweet which the user replied on
+ * @param {String} userId 
+ * @param {String} body 
+ * @param {String} tweetId 
+ * @param {String} media 
+ * @param {String} taggedUsers 
+ * @returns {Object} 
  */
+
+ const makeReplyFunc = async(userId, body, tweetId, media, taggedUsers)=>{
+     
+        //Reply is a tweet so we have to make the tweet first
+        let createdTweet = new tweet({
+            user: userId,
+            isReply: true    
+            });
+    
+            //Adding body if exists
+            if(body)
+                createdTweet.body = body;
+            //Adding media/taggedUsers if exists
+            if(taggedUsers)
+                createdTweet.taggedUsers = taggedUsers;
+            if(media)
+                createdTweet.media=media;
+    
+            // save it in the datebase to find it by tweet id saved in replies
+            await createdTweet.save();
+    
+            //Then we have to find the tweet the user is trying to reply on it
+            let retweetedTweet = await tweet.findById(tweetId).populate('user').populate({ path: 'body.with', select: '_id name' });
+            
+            //If the post is deleted or not found
+            if(!retweetedTweet){   
+                throw new AppError('No tweet with this id', 500);
+            }
+    
+            //Then we must add tweet created to the retweetedTweet's replies
+            retweetedTweet.replies.push(createdTweet);
+            await retweetedTweet.save();
+            return retweetedTweet
+ }
+ exports.makeReplyFunc =makeReplyFunc
+
+
  exports.makeReply = async(req, res) =>{
     const {body, tweetId, media, taggedUsers} = req.body;
     const userId =req.user.id;
@@ -326,35 +371,8 @@ exports.createUser= async(req, res)=>{
         if(taggedUsers && taggedUsers.length>10)
              return res.status(500).json({error:"Can't tag more than 10 users!"});
 
-        //Reply is a tweet so we have to make the tweet first
-        let createdTweet = new tweet({
-        user: userId,
-        isReply: true    
-        });
-
-        //Adding body if exists
-        if(body)
-            createdTweet.body = body;
-        //Adding media/taggedUsers if exists
-        if(taggedUsers)
-            createdTweet.taggedUsers = taggedUsers;
-        if(media)
-            createdTweet.media=media;
-
-        // save it in the datebase to find it by tweet id saved in replies
-        await createdTweet.save();
-
-        //Then we have to find the tweet the user is trying to reply on it
-        let retweetedTweet = await tweet.findById(tweetId).populate('user').populate({ path: 'body.with', select: '_id name' });
+        const retweetedTweet = makeReplyFunc(userId, body, tweetId, media, taggedUsers);
         
-        //If the post is deleted or not found
-        if(!retweetedTweet){   
-            return res.status(404).json({ error: 'Tweet not found' })
-        }
-
-        //Then we must add tweet created to the retweetedTweet's replies
-        retweetedTweet.replies.push(createdTweet);
-        await retweetedTweet.save();
         return res.status(200).json({message: "Replied successfully", tweet: retweetedTweet});
 
     }
@@ -365,12 +383,36 @@ exports.createUser= async(req, res)=>{
  } 
 
 
+
 /**
- * @description This function is used to know who retweeted this tweet(tweet id is sent in the parameters)
- * @param {*} req 
- * @param {*} res 
- * @returns {Object} Returns the users who retweeted a tweet
+ *  @description This function is used to know who retweeted this tweet(tweet id is sent in the parameters)
+ * @param {Object} usersRetweeters 
+ * @returns Returns the users who retweeted a tweet
  */
+
+const getRetweetsFunc = async(usersRetweeters)=>{
+  
+        let dataUsers = [];
+        if(usersRetweeters){
+            for(let i of usersRetweeters){
+                let user1 = await user.findById(i);
+                //Adding data that will be sent using json file
+                if(user1){
+                    let userData = {
+                        username : user1.username,
+                        name: user1.name,
+                        email: user1.email,
+                        image: user1.image
+                    }
+                
+                    //Pushing data to the array
+                    dataUsers.push(userData);
+                }
+            }
+        }
+        return dataUsers;
+}
+exports.getRetweetsFunc = getRetweetsFunc
 
 exports.getRetweets = async(req, res) =>{
     const tweetId = req.params.tweetId;
@@ -384,21 +426,12 @@ exports.getRetweets = async(req, res) =>{
 
         //Getting userRetweeters 
         let usersRetweeters = retweetedTweet.retweeters;
+        console.log(usersRetweeters)
         let dataUsers = [];
-        if(usersRetweeters){
-            for(let i of usersRetweeters){
-                let user1 = await user.findById(i);
-                //Adding data that will be sent using json file
-                let userData = {
-                    username : user1.username,
-                    name: user1.name,
-                    email: user1.email,
-                    image: user1.image
-                }
-                //Pushing data to the array
-                dataUsers.push(userData);
-            }
-        }
+        if(usersRetweeters)
+            dataUsers = getRetweetsFunc(usersRetweeters);
+     
+        
         return res.status(200).json({message: "Success", users: dataUsers, count: usersRetweeters.length});
 
     }
@@ -406,7 +439,6 @@ exports.getRetweets = async(req, res) =>{
         console.log(err)
         return res.status(500).json({error:"Something went wrong"})
     }
-
  }
 
 /**
