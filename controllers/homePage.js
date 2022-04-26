@@ -335,17 +335,17 @@ const makeRetweetFunc = async(tweetId, userId)=>{
             if(media)
                 createdTweet.media=media;
     
-            // save it in the datebase to find it by tweet id saved in replies
-            await createdTweet.save();
     
             //Then we have to find the tweet the user is trying to reply on it
-            let retweetedTweet = await tweet.findById(tweetId).populate('user').populate({ path: 'body.with', select: '_id name' });
+            var retweetedTweet = await tweet.findById(tweetId).populate('user').populate({ path: 'body.with', select: '_id name' });
             
             //If the post is deleted or not found
             if(!retweetedTweet){   
                 throw new AppError('No tweet with this id', 500);
             }
     
+            // save it in the datebase to find it by tweet id saved in replies
+            await createdTweet.save();
             //Then we must add tweet created to the retweetedTweet's replies
             retweetedTweet.replies.push(createdTweet);
             await retweetedTweet.save();
@@ -370,11 +370,32 @@ const makeRetweetFunc = async(tweetId, userId)=>{
         //Checking the count of the tagged users
         if(taggedUsers && taggedUsers.length>10)
              return res.status(500).json({error:"Can't tag more than 10 users!"});
-
-        const retweetedTweet = makeReplyFunc(userId, body, tweetId, media, taggedUsers);
+        //Reply is a tweet so we have to make the tweet first
+        let createdTweet = new tweet({
+        user: userId,
+        isReply: true    
+        });
+        //Adding body if exists
+        if(body)
+            createdTweet.body = body;
+        //Adding media/taggedUsers if exists
+        if(taggedUsers)
+            createdTweet.taggedUsers = taggedUsers;
+        if(media)
+            createdTweet.media=media;
+        // save it in the datebase to find it by tweet id saved in replies
+        await createdTweet.save();
+        //Then we have to find the tweet the user is trying to reply on it
+        let retweetedTweet = await tweet.findById(tweetId).populate('user').populate({ path: 'body.with', select: '_id name' });
         
+        //If the post is deleted or not found
+        if(!retweetedTweet){   
+            return res.status(404).json({ error: 'Tweet not found' })
+        }
+        //Then we must add tweet created to the retweetedTweet's replies
+        retweetedTweet.replies.push(createdTweet);
+        await retweetedTweet.save();
         return res.status(200).json({message: "Replied successfully", tweet: retweetedTweet});
-
     }
     catch (err) {
         console.log(err)
@@ -414,6 +435,7 @@ const getRetweetsFunc = async(usersRetweeters)=>{
 }
 exports.getRetweetsFunc = getRetweetsFunc
 
+//Get retweets of a tweet by tweetId
 exports.getRetweets = async(req, res) =>{
     const tweetId = req.params.tweetId;
     try{
@@ -423,24 +445,30 @@ exports.getRetweets = async(req, res) =>{
         if(!retweetedTweet){
             return res.status(404).json({ error: 'tweet not found' })
         }
-
         //Getting userRetweeters 
         let usersRetweeters = retweetedTweet.retweeters;
-        console.log(usersRetweeters)
         let dataUsers = [];
-        if(usersRetweeters)
-            dataUsers = getRetweetsFunc(usersRetweeters);
-     
-        
+        if(usersRetweeters){
+            for(let i of usersRetweeters){
+                let user1 = await user.findById(i);
+                //Adding data that will be sent using json file
+                let userData = {
+                    username : user1.username,
+                    name: user1.name,
+                    email: user1.email,
+                    image: user1.image
+                }
+                //Pushing data to the array
+                dataUsers.push(userData);
+            }
+        }
         return res.status(200).json({message: "Success", users: dataUsers, count: usersRetweeters.length});
-
     }
     catch (err) {
         console.log(err)
         return res.status(500).json({error:"Something went wrong"})
     }
  }
-
 /**
  * @description This function is used to know who liked this tweet(tweet id is sent in the parameters)
  * @param {*} req 
