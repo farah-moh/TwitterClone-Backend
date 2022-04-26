@@ -136,7 +136,7 @@ exports.getTweets = async(req, res)=>{
             })
         }  
         //3ayzeen retweets terga3?
-        return res.status(200).json({data: sortedArray, succes: "true", userName: mainUser.username,name:mainUser});
+        return res.status(200).json({data: sortedArray, succes: "true", userName: mainUser.username,name:mainUser.name});
     }
     catch (err) {
         console.log(err)
