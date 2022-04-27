@@ -6,13 +6,14 @@ const settingsController = require('./../controllers/settings');
 const passportConfig = require('../config/passport');
 // const fileUpload = require('express-fileupload');
 const passport = require('passport');
+const fileUpload = require('express-fileupload');
 
 const router = express.Router();
 
 router.use(authenticationController.protect);
 
 router.get('/profile',userController.getEditProfile);
-router.patch('/profile',userController.editProfile);
+router.patch('/profile',fileUpload(),userController.editProfile);
 router.patch('/Account-info/Email',settingsController.updateEmail);
 router.patch('/Account-info/Username',settingsController.updateUsername);
 router.patch('/Account-info/Protected-tweets',settingsController.protectTweets);

@@ -25,7 +25,7 @@ module.exports = () => {
         email: `user${i+5}@gmail.com`,
         image: faker.image.avatar(),
         password: 'password',
-        username: `user${i+10}`,
+        username: `user${i+5}`,
         birthdate: '2001-09-12',
         confirmed: true,
         country: 'Egypt',

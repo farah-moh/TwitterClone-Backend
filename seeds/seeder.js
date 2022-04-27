@@ -11,6 +11,7 @@ const tweet = require('./../models/tweet');
 const { ObjectId } = require('mongoose').Types;
 
 const connectDB = require('./../utils/connectDB');
+const MimeNode = require('nodemailer/lib/mime-node');
 
 (async function() {
     //process.env.NODE_ENV = 'seed';
@@ -43,13 +44,70 @@ const connectDB = require('./../utils/connectDB');
         currUser = currUser.user._id.toString();
         let currTweets = await user.findById(currUser);
         let User = await user.findById(currUser);
-        console.log(currTweets);
         currTweets = currTweets.tweets;
-        console.log(currTweets);
         currTweets.push(new ObjectId(tweetIds[i]));
-        console.log(currTweets);
         User["tweets"] = currTweets;
         await User.save();
     }
+
+    let user1 = await user.findById(usersIds[0]);
+    let to_follow = [];
+    for(let i=1;i<10;i+=1) {
+      let currUser = await user.findById(usersIds[i]);
+      let followers = currUser.followers;
+      followers.push(new ObjectId(usersIds[0]));
+      currUser["followers"] = followers;
+      await currUser.save();
+      to_follow.push(new ObjectId(usersIds[i]));
+    }
+
+    user1["following"] = to_follow;
+    user1.save();
+
+    createUser();
+
     console.log('✅ Seeds executed successfully');
   })();
+
+// Initializing known users
+createUser = async ()=>{
+
+    const user1 = new user({
+        email: 'rahmanezzat14@gmail.com',
+        confirmed: true,
+        username: 'boody',
+        password: 'boody123',
+        birthdate: "2001-07-16",
+        name: 'Abdelrahman',
+        city: 'Cairo',
+        country: 'Egypt',
+        protectedTweets: false
+    })
+    await user1.save();
+
+    const user2 = new user({
+        email: 'farahabdelfatttah@gmail.com',
+        confirmed: true,
+        username: 'faroohaa',
+        password: 'farah123',
+        birthdate: "2001-09-12",
+        name: 'Farah',
+        city: 'Cairo',
+        country: 'Egypt',
+        protectedTweets: false,
+    })
+    await user2.save();
+
+    const user3 = new user({
+        email: 'ossamamostafa5@gmail.com',
+        confirmed: true,
+        username: 'osama',
+        password: 'osama123',
+        birthdate: "2001-09-12",
+        name: 'Mostafa',
+        city: 'Cairo',
+        country: 'Egypt',   
+        protectedTweets: false,
+    })
+    await user3.save();
+}
