@@ -20,7 +20,7 @@ const getProfile = async (userId,type) => {
     const followingCount = userProfile.following.length;
     const followersCount = userProfile.followers.length;
     const likes = userProfile.likedTweets;
-    const returnedUser = (({ username, name, birthdate, tweets, protectedTweets,country,city,bio,website,createdAt }) => ({ username, name, birthdate, tweets, protectedTweets,country,city,bio,website,createdAt }))(userProfile);
+    const returnedUser = (({ username, name, birthdate, tweets, protectedTweets,country,city,bio,website,image,createdAt }) => ({ username, name, birthdate, tweets, protectedTweets,country,city,bio,website,image,createdAt }))(userProfile);
 
     if(type==='profile') {
         let no_replies = returnedUser.tweets;
@@ -84,8 +84,8 @@ const getUser = async (notMeId,meId,type)  => {
     if(isProtected && !mutuals) {
         //removing tweets from returnedUser
         returnedUser = 
-        (({ username, name, birthdate, followingCount, followersCount, followsMe, protectedTweets,country,city,bio,website,createdAt}) => 
-        ({ username, name, birthdate,followingCount, followersCount, followsMe, protectedTweets,country,city,bio,website,createdAt}))(notMe);
+        (({ username, name, birthdate, followingCount, followersCount, followsMe, protectedTweets,country,city,bio,website,image,createdAt}) => 
+        ({ username, name, birthdate,followingCount, followersCount, followsMe, protectedTweets,country,city,bio,website,image,createdAt}))(notMe);
         //returnedUser = await notMe.select('-tweets');
     }
     else {
