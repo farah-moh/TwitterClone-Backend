@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
 const sendEmail = require('./../utils/email_info');
 const { _infoTransformers } = require('passport/lib');
-const authentication = require('./authentication')
+const authentication = require('./authentication');
 
 /**
  * @description - Takes user ID and and returns its info
