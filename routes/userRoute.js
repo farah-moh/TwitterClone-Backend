@@ -13,5 +13,6 @@ router.get('/',userController.getProfile);
 router.get('/with_replies',userController.getProfileWithReplies);
 router.get('/media',userController.getProfileMedia);
 router.get('/likes',userController.getProfileLikes);
+router.patch('/report',userController.reportProfile);
 
 module.exports = router;

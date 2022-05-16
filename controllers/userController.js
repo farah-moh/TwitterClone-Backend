@@ -1,6 +1,9 @@
+const mongoose = require('mongoose');
 const crypto = require('crypto');
 const { ObjectId } = require('mongoose').Types;
 const user = require('../models/user');
+const tweet = require('../models/tweet');
+const report = require('../models/report');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const jwt = require('jsonwebtoken');
@@ -24,7 +27,9 @@ const getProfile = async (userId,type) => {
 
     if(type==='profile') {
         let no_replies = returnedUser.tweets;
-        no_replies = no_replies.filter(x => x.isReply===false);
+        console.log(no_replies);
+        let userTweets = await tweet.find({_id: {$in: no_replies}});
+        no_replies = userTweets.filter(x => x.isReply===false);
         returnedUser["tweets"] = no_replies;
     }
     //needs testing
@@ -214,6 +219,48 @@ exports.editProfileFunc = editProfileFunc;
 exports.editProfile = catchAsync(async (req, res, next) => {
     const editedUser = await editProfileFunc(req.user._id, req.body);
     res.status(200).json(editedUser);
+  });
+
+const createReport = async body => {
+    const newReport = await report.create({
+        message: body.message,
+        whoReported: body.reporter,
+        reported: body.reported 
+      });
+      return newReport;
+}
+
+exports.reportProfile = catchAsync(async (req, res, next) => {
+    const reportType = req.query.q;
+    const reportedUser = req.params.username;
+    let reportedUserId = await user.findOne({'username': reportedUser}).select('_id');
+    reportedUserId = reportedUserId._id.toString();
+    let meId = req.user.id;
+    const meObj = mongoose.Types.ObjectId(meId);
+    const reportedUserObj = mongoose.Types.ObjectId(reportedUserId);
+
+    let message ='';
+    if(reportType==='1') message = 'I\'m not interested in this account.';
+    if(reportType==='2') message = 'It\'s suspicious or spam.';
+    if(reportType==='3') message = 'It appears their account is hacked.';
+    if(reportType==='4') message = 'They are pretending to be me or someone else.';
+    if(reportType==='5') message = 'Their tweets are abusive or hateful.';
+    if(reportType==='6') message = 'They are expressing intentions of self-harm or suicide';
+
+    
+    const reportObj = {
+        message: message,
+        whoReported: meObj,
+        reported: reportedUserObj,
+    }
+    const reportReturn = await createReport(reportObj);
+    await reportReturn.save();
+
+    res.status(200).json({
+        status: 'success',
+        message: 'Reported successfuly.',
+        report: reportObj,
+      });
   });
 
 
