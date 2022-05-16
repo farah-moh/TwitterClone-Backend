@@ -124,6 +124,11 @@ const userSchema = new Schema({
         ref: 'tweet'
     }],
 
+    reports: [{
+        type: Schema.ObjectId,
+        ref: 'report'
+    }],
+
     image: {
         type: String,
         default: null
