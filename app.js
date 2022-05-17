@@ -8,8 +8,10 @@ const AppError = require('./utils/appError')
 const authenticationRoute = require('./routes/authenticationRoute')
 const messagesRoute= require("./routes/messagesRoute");
 const settingsRoute = require('./routes/settingsRoute');
-const postHomePage = require('./routes/postHomePage')
-const userRoute = require('./routes/userRoute')
+const postHomePage = require('./routes/postHomePage');
+const userRoute = require('./routes/userRoute');
+const searchRoute = require('./routes/searchRoute');
+const adminRoute = require('./routes/adminRoute');
 
 const corsOptions = {
     origin: true,
@@ -28,8 +30,10 @@ const corsOptions = {
   app.enable('trust proxy');
 
 app.use('/', authenticationRoute);
+app.use('/search', searchRoute);
 app.use('/home', postHomePage);
 app.use('/settings', settingsRoute);
+app.use('/admin', adminRoute);
 app.use('/:username',userRoute)
 app.use('/messages/:receiver_id', messagesRoute);
 

@@ -25,6 +25,10 @@ const reportsSchema = new Schema({
     reported: {
         type: Schema.ObjectId,
         ref: 'user'
+    },
+    type: {
+        type: Number,
+        enum: [1,2,3,4,5,6]
     }
 })
 

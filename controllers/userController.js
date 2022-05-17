@@ -23,13 +23,13 @@ const getProfile = async (userId,type) => {
     const followingCount = userProfile.following.length;
     const followersCount = userProfile.followers.length;
     const likes = userProfile.likedTweets;
-    const returnedUser = (({ username, name, birthdate, tweets, protectedTweets,country,city,bio,website,createdAt }) => ({ username, name, birthdate, tweets, protectedTweets,country,city,bio,website,createdAt }))(userProfile);
+    const returnedUser = (({ username, name, birthdate, tweets, protectedTweets,country,city,bio,website,image,createdAt }) => ({ username, name, birthdate, tweets, protectedTweets,country,city,bio,website,image,createdAt }))(userProfile);
 
     if(type==='profile') {
         let no_replies = returnedUser.tweets;
-        console.log(no_replies);
         let userTweets = await tweet.find({_id: {$in: no_replies}});
         no_replies = userTweets.filter(x => x.isReply===false);
+        no_replies = no_replies.filter(x => x.isReply===false);
         returnedUser["tweets"] = no_replies;
     }
     //needs testing
@@ -89,8 +89,8 @@ const getUser = async (notMeId,meId,type)  => {
     if(isProtected && !mutuals) {
         //removing tweets from returnedUser
         returnedUser = 
-        (({ username, name, birthdate, followingCount, followersCount, followsMe, protectedTweets,country,city,bio,website,createdAt}) => 
-        ({ username, name, birthdate,followingCount, followersCount, followsMe, protectedTweets,country,city,bio,website,createdAt}))(notMe);
+        (({ username, name, birthdate, followingCount, followersCount, followsMe, protectedTweets,country,city,bio,website,image,createdAt}) => 
+        ({ username, name, birthdate,followingCount, followersCount, followsMe, protectedTweets,country,city,bio,website,image,createdAt}))(notMe);
         //returnedUser = await notMe.select('-tweets');
     }
     else {
@@ -264,5 +264,48 @@ exports.reportProfile = catchAsync(async (req, res, next) => {
   });
 
 
+exports.reportProfile = catchAsync(async (req, res, next) => {
+    const reportType = req.query.q;
+    const reportedUser = req.params.username;
+    let reportedUserId = await user.findOne({'username': reportedUser}).select('_id');
+    reportedUserId = reportedUserId._id.toString();
+    let meId = req.user.id;
+    const meObj = mongoose.Types.ObjectId(meId);
+    const reportedUserObj = mongoose.Types.ObjectId(reportedUserId);
+
+    let message ='';
+    if(reportType==='1') message = 'I\'m not interested in this account.';
+    if(reportType==='2') message = 'It\'s suspicious or spam.';
+    if(reportType==='3') message = 'It appears their account is hacked.';
+    if(reportType==='4') message = 'They are pretending to be me or someone else.';
+    if(reportType==='5') message = 'Their tweets are abusive or hateful.';
+    if(reportType==='6') message = 'They are expressing intentions of self-harm or suicide';
+
+
+    const reportObj = {
+        message: message,
+        reporter: meObj,
+        reported: reportedUserObj,
+        type: parseInt(reportType) 
+    }
+    const reportReturn = await createReport(reportObj);
+    await reportReturn.save();
+
+    let allReports = await user.findById(reportedUserObj);
+    allReports = allReports.reports;
+    allReports.push(new ObjectId(reportReturn._id));
+
+    let User = await user.findById(reportedUserObj);
+    User["reports"] = allReports;
+    await User.save();
+
+    //console.log(reports);
+
+    res.status(200).json({
+        status: 'success',
+        message: 'Reported successfuly.',
+        report: reportObj,
+      });
+  });
 
   

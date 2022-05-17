@@ -130,12 +130,12 @@ const userSchema = new Schema({
     }],
 
     image: {
-        type: [String],
+        type: String,
         default: null
     },
 
     headerImage: {
-        type: [String],
+        type: String,
         default: null
     },
 
@@ -156,7 +156,8 @@ const userSchema = new Schema({
 
     theme: {
         type: String,
-        enum: {values: ['light', 'dark']}
+        enum: {values: ['light', 'dark']},
+        default: 'light'
     },
     bio: {
         type: String,
@@ -169,6 +170,11 @@ const userSchema = new Schema({
         validate: [validator.isURL, 'URL is invalid.']
     },
     protectedTweets: {
+        type: Boolean,
+        default: false
+    },
+    
+    isAdmin: {
         type: Boolean,
         default: false
     }
