@@ -172,6 +172,11 @@ const userSchema = new Schema({
     protectedTweets: {
         type: Boolean,
         default: false
+    },
+    
+    isAdmin: {
+        type: Boolean,
+        default: false
     }
 
 },

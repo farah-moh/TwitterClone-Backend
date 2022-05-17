@@ -225,7 +225,8 @@ exports.editProfile = catchAsync(async (req, res, next) => {
     const newReport = await report.create({
         message: body.message,
         whoReported: body.reporter,
-        reported: body.reported 
+        reported: body.reported,
+        type: body.type
       });
       return newReport;
 }
@@ -252,9 +253,20 @@ exports.reportProfile = catchAsync(async (req, res, next) => {
         message: message,
         reporter: meObj,
         reported: reportedUserObj,
+        type: parseInt(reportType) 
     }
     const reportReturn = await createReport(reportObj);
     await reportReturn.save();
+
+    let allReports = await user.findById(reportedUserObj);
+    allReports = allReports.reports;
+    allReports.push(new ObjectId(reportReturn._id));
+
+    let User = await user.findById(reportedUserObj);
+    User["reports"] = allReports;
+    await User.save();
+
+    //console.log(reports);
 
     res.status(200).json({
         status: 'success',

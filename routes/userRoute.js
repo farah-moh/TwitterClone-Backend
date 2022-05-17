@@ -15,4 +15,5 @@ router.get('/media',userController.getProfileMedia);
 router.get('/likes',userController.getProfileLikes);
 router.patch('/report',userController.reportProfile);
 
+
 module.exports = router;
