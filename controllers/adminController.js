@@ -56,17 +56,53 @@ const topFiveFollowed = async () => {
     return mapped;
 };
 
+const topUsersPerWeek = async () => {
+
+    var daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday","Saturday"];
+    const yesterdayNo = 86400000;
+    let currentDay = new Date();
+
+    let arr=[]
+
+    let userCount1 = await user.find({createdAt:{$gte: new Date(Date.now() - yesterdayNo),$lt: new Date(Date.now())}})
+    let userCount2 = await user.find({createdAt:{$gte: new Date(Date.now() - yesterdayNo*2),$lt: new Date(Date.now() - yesterdayNo)}})
+    let userCount3 = await user.find({createdAt:{$gte: new Date(Date.now() - yesterdayNo*3),$lt: new Date(Date.now() - yesterdayNo*2)}})
+    let userCount4 = await user.find({createdAt:{$gte: new Date(Date.now() - yesterdayNo*4),$lt: new Date(Date.now() - yesterdayNo*3)}})
+    let userCount5 = await user.find({createdAt:{$gte: new Date(Date.now() - yesterdayNo*5),$lt: new Date(Date.now() - yesterdayNo*4)}})
+    let userCount6 = await user.find({createdAt:{$gte: new Date(Date.now() - yesterdayNo*6),$lt: new Date(Date.now() - yesterdayNo*5)}})
+    let userCount7 = await user.find({createdAt:{$gte: new Date(Date.now() - yesterdayNo*7),$lt: new Date(Date.now() - yesterdayNo*6)}})
+
+    console.log(currentDay.getDay());
+    arr.push({name: daysOfWeek[currentDay.getDay()] , users: userCount1.length});
+    currentDay.setDate(currentDay.getDate() - 1);
+    arr.push({name: daysOfWeek[currentDay.getDay()] , users: userCount2.length});
+    currentDay.setDate(currentDay.getDate() - 1);
+    arr.push({name: daysOfWeek[currentDay.getDay()] , users: userCount3.length});
+    currentDay.setDate(currentDay.getDate() - 1);
+    arr.push({name: daysOfWeek[currentDay.getDay()] , users: userCount4.length});
+    currentDay.setDate(currentDay.getDate() - 1);
+    arr.push({name: daysOfWeek[currentDay.getDay()] , users: userCount5.length});
+    currentDay.setDate(currentDay.getDate() - 1);
+    arr.push({name: daysOfWeek[currentDay.getDay()] , users: userCount6.length});
+    currentDay.setDate(currentDay.getDate() - 1);
+    arr.push({name: daysOfWeek[currentDay.getDay()] , users: userCount7.length});
+
+    return arr;
+};
+
 exports.dashboardStatistics = catchAsync(async (req, res, next) => {
 
     const topReports = await topFiveReported ();
     const topLiked = await topFiveLiked ();
     const topFollowed = await topFiveFollowed();
+    const topUsersWeek = await topUsersPerWeek();
 
     res.status(200).json({
         success: 'true',
         TopReported: topReports,
         TopFollowers: topFollowed,
-        TopLikes: topLiked
+        TopLikes: topLiked,
+        topUsersPerWeek: topUsersWeek
     });
 });
 
