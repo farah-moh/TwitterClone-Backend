@@ -12,6 +12,7 @@ router.use(authenticationController.protectAdmin);
 router.get('/user',adminController.getUsers);
 router.get('/dashboard',adminController.dashboardStatistics);
 router.get('/:username/reports',adminController.getReports);
+router.get('/:username/statistics',adminController.getStatistics);
 router.delete('/:username/ban',adminController.banUser);
 
 module.exports = router;
