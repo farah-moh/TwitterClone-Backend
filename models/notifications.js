@@ -17,6 +17,10 @@ const notificationSchema = new Schema({
 
     notificationStream: {
         type: String
+    },
+    createdAt:{
+        type: Date,
+        default: Date.now
     }
 })
 

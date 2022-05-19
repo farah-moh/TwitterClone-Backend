@@ -27,7 +27,7 @@ const activitySchema = new Schema({
 
     activityType: {
         type: String,
-        enum: ['follow','favorite','retweet','reply'],
+        enum: ['follow','retweet','reply','tag', 'like', 'quoteRetweet', 'vote'],
         required: true
     },
 

@@ -146,7 +146,7 @@ const userSchema = new Schema({
 
     notificationFlag: {
         type: Boolean,
-        default: true
+        default: false
     },
 
     theme: {
@@ -154,6 +154,14 @@ const userSchema = new Schema({
         enum: {values: ['light', 'dark']},
         default: 'light'
     },
+    notificationsArray: [{
+        type: Schema.ObjectId,
+        ref: 'notifications'
+    }],
+    bookMarkedTweets: [{
+        type: Schema.ObjectId,
+        ref: 'tweet'
+    }],
     bio: {
         type: String,
         default: "",
@@ -164,10 +172,18 @@ const userSchema = new Schema({
         //default: " ",
         validate: [validator.isURL, 'URL is invalid.']
     },
+    isAdmin: {
+        type: Boolean,
+        default: false
+    },
     protectedTweets: {
         type: Boolean,
         default: false
-    }
+    },
+    quotedRetweets:[{
+        type: Schema.ObjectId,
+        ref: 'tweet' 
+    }]
 
 },
     {timestamps: true},

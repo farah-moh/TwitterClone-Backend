@@ -32,7 +32,14 @@ const tweetSchema = new Schema({
         type: Boolean,
         default: false
     },
-
+    isQuoteRetweet:{
+        type: Boolean,
+        default: false
+    },
+    idOfQuotedTweet:{
+        type: Schema.ObjectId,
+        ref: 'tweet'
+    },
     media: {
         type: [String],
         default: null
@@ -47,7 +54,13 @@ const tweetSchema = new Schema({
         type: Schema.ObjectId,
         ref: 'user'
     }],
-
+    quotedRetweets: [{
+        type: Schema.ObjectId,
+        ref: 'tweet'
+    }],
+    hashtags:{
+        type: [String]
+    },
     replies: [{
         type: Schema.ObjectId,
         ref: 'tweet'
@@ -64,9 +77,17 @@ const tweetSchema = new Schema({
             return (value.length <= 10);
           }
         }
+    },
+    poll:{
+        type: Schema.ObjectId,
+        ref: 'poll'
+    },
+    createdAt:{
+        type: Date,
+        default: Date.now
     }
 },
-    {timestamps: true},
+    {timestamps: false},
 )
 
 
