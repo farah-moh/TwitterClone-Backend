@@ -1,13 +1,17 @@
+const mongoose = require('mongoose');
 const crypto = require('crypto');
 const { ObjectId } = require('mongoose').Types;
 const user = require('../models/user');
+const tweet = require('../models/tweet');
+const report = require('../models/report');
+const follow = require('../models/follow');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
 const sendEmail = require('./../utils/email_info');
 const { _infoTransformers } = require('passport/lib');
-const authentication = require('./authentication');
+const authentication = require('./authentication')
 
 /**
  * @description - Takes user ID and and returns its info
@@ -20,10 +24,13 @@ const getProfile = async (userId,type) => {
     const followingCount = userProfile.following.length;
     const followersCount = userProfile.followers.length;
     const likes = userProfile.likedTweets;
-    const returnedUser = (({ username, name, birthdate, tweets, protectedTweets,country,city,bio,website,image,createdAt }) => ({ username, name, birthdate, tweets, protectedTweets,country,city,bio,website,image,createdAt }))(userProfile);
+
+    const returnedUser = (({ username, name, followingCount,followersCount, birthdate, tweets, protectedTweets,country,city,bio,website,image,createdAt}) => ({ username, name, followingCount,followersCount, birthdate, tweets, protectedTweets,country,city,bio,website,image,createdAt}))(userProfile);
 
     if(type==='profile') {
         let no_replies = returnedUser.tweets;
+        let userTweets = await tweet.find({_id: {$in: no_replies}});
+        no_replies = userTweets.filter(x => x.isReply===false);
         no_replies = no_replies.filter(x => x.isReply===false);
         returnedUser["tweets"] = no_replies;
     }
@@ -45,6 +52,15 @@ const getProfile = async (userId,type) => {
     }
     returnedUser["followingCount"] = followingCount;
     returnedUser["followersCount"] = followersCount;
+
+    let birthdate = returnedUser.birthdate;
+    birthdate = `${birthdate.getFullYear()}-${birthdate.getMonth()+1}-${birthdate.getDate()}`;
+    returnedUser["birthdate"] = birthdate;
+
+    let createdAt = returnedUser.createdAt;
+    createdAt = `${createdAt.getFullYear()}-${createdAt.getMonth()+1}-${createdAt.getDate()}`;
+    returnedUser["createdAt"] = createdAt;
+
     return returnedUser;
 };
 
@@ -67,25 +83,32 @@ const getUser = async (notMeId,meId,type)  => {
 
     //checking if I am following user
     let mutuals = await user.findById(meId).select('following');
-    mutuals = mutuals.following.find(x => x._id === notMeId);
+    mutuals = mutuals.following;
+    mutuals = mutuals.filter(x => x.toString() === notMeId);
 
     //checking if user follows me
     let followsMeProp = await user.findById(meId).select('followers');
-    followsMeProp = followsMeProp.followers.find(x => x._id === notMeId);
+    followsMeProp = followsMeProp.followers;
+    followsMeProp = followsMeProp.filter(x => x.toString() === notMeId);
 
     //checking if their profile is protected
     let isProtected = notMe.protectedTweets;
     
-    let followsMe = followsMeProp? true:false;
+    let iAmAdmin = await user.findById(meId).select('isAdmin');
+    iAmAdmin = iAmAdmin.isAdmin;
+    
+    
+    let followsMe = followsMeProp.length? true:false;
+    let followHim = mutuals.length? true:false;
     notMe["followsMe"] = followsMe;
-    let returnedUser;
+    notMe["followHim"] = followHim;
     
     //if private user & I don't follow him, don't send tweets
-    if(isProtected && !mutuals) {
+    if(isProtected && !mutuals.length && !iAmAdmin) {
         //removing tweets from returnedUser
         returnedUser = 
-        (({ username, name, birthdate, followingCount, followersCount, followsMe, protectedTweets,country,city,bio,website,image,createdAt}) => 
-        ({ username, name, birthdate,followingCount, followersCount, followsMe, protectedTweets,country,city,bio,website,image,createdAt}))(notMe);
+        (({ username, name, birthdate, followingCount, followersCount, followsMe, followHim, protectedTweets,country,city,bio,website,image,createdAt}) => 
+        ({ username, name, birthdate,followingCount, followersCount, followsMe, followHim, protectedTweets,country,city,bio,website,image,createdAt}))(notMe);
         //returnedUser = await notMe.select('-tweets');
     }
     else {
@@ -216,6 +239,117 @@ exports.editProfile = catchAsync(async (req, res, next) => {
     res.status(200).json(editedUser);
   });
 
+const createReport = async body => {
+    const newReport = await report.create({
+        message: body.message,
+        whoReported: body.reporter,
+        reported: body.reported 
+      });
+      return newReport;
+}
+
+exports.reportProfile = catchAsync(async (req, res, next) => {
+    const reportType = req.query.q;
+    const reportedUser = req.params.username;
+    let reportedUserId = await user.findOne({'username': reportedUser}).select('_id');
+    reportedUserId = reportedUserId._id.toString();
+    let meId = req.user.id;
+    const meObj = mongoose.Types.ObjectId(meId);
+    const reportedUserObj = mongoose.Types.ObjectId(reportedUserId);
+
+    let message ='';
+    if(reportType==='1') message = 'I\'m not interested in this account.';
+    if(reportType==='2') message = 'It\'s suspicious or spam.';
+    if(reportType==='3') message = 'It appears their account is hacked.';
+    if(reportType==='4') message = 'They are pretending to be me or someone else.';
+    if(reportType==='5') message = 'Their tweets are abusive or hateful.';
+    if(reportType==='6') message = 'They are expressing intentions of self-harm or suicide';
 
 
+    const reportObj = {
+        message: message,
+        reporter: meObj,
+        reported: reportedUserObj,
+        type: parseInt(reportType) 
+    }
+    const reportReturn = await createReport(reportObj);
+    await reportReturn.save();
+
+    let allReports = await user.findById(reportedUserObj);
+    allReports = allReports.reports;
+    allReports.push(new ObjectId(reportReturn._id));
+
+    let User = await user.findById(reportedUserObj);
+    User["reports"] = allReports;
+    await User.save();
+
+    //console.log(reports);
+
+    res.status(200).json({
+        status: 'success',
+        message: 'Reported successfuly.',
+        report: reportObj,
+      });
+  });
+
+
+  exports.follow = catchAsync(async (req, res, next) => {
+    let meId = req.user.id;
+    const toFollow = req.params.username;
+    meId = new ObjectId(meId);
+
+    let notMeId = await user.findOne({username: toFollow}).select('_id');
+    notMeId = notMeId._id;
+
+    let alreadyFollows = await follow.find({follower: meId, following: notMeId});
+    console.log(alreadyFollows);
+    if(alreadyFollows.length) {
+        res.status(200).json({
+            status: 'already follows',
+          });
+    }
+    await follow.create({follower:meId, following: notMeId});
+
+    const me = await user.findById(meId);
+    const notMe = await user.findById(notMeId);
+    me.following.push(notMeId.toString());
+    notMe.followers.push(meId.toString());
+
+    await me.save();
+    await notMe.save();
+
+    res.status(200).json({
+        status: 'success',
+    });
+  });
+
+  exports.unfollow = catchAsync(async (req, res, next) => {
+    let meId = req.user.id;
+    const toFollow = req.params.username;
+    meId = new ObjectId(meId);
+
+    let notMeId = await user.findOne({username: toFollow}).select('_id');
+    notMeId = notMeId._id;
+
+    let alreadyDoesntFollow = await follow.find({follower: meId, following: notMeId});
+    if(!alreadyDoesntFollow.length) {
+        res.status(200).json({
+            status: 'Already doesn\'t follow',
+          });
+    }
+    await follow.deleteOne({follower:meId, following: notMeId});
+
+    const me = await user.findById(meId);
+    const notMe = await user.findById(notMeId);
+    console.log(me.following);
+    me.following = me.following.filter(x => x.toString() != notMeId);
+    notMe.followers= me.followers.filter(x => x.toString() != meId);
+    
+    await me.save();
+    await notMe.save();
+
+    res.status(200).json({
+        status: 'success',
+    });
+  });
   

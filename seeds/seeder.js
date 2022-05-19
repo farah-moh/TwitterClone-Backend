@@ -8,6 +8,7 @@ const tweetSeed = require('./data/tweets');
 
 const user = require('./../models/user');
 const tweet = require('./../models/tweet');
+const follow = require('./../models/follow');
 const { ObjectId } = require('mongoose').Types;
 
 const connectDB = require('./../utils/connectDB');
@@ -59,6 +60,7 @@ const MimeNode = require('nodemailer/lib/mime-node');
       currUser["followers"] = followers;
       await currUser.save();
       to_follow.push(new ObjectId(usersIds[i]));
+      await follow.create({follower: new ObjectId(usersIds[0]), following: new ObjectId(usersIds[i])});
     }
 
     user1["following"] = to_follow;
