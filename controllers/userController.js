@@ -24,15 +24,35 @@ const getProfile = async (userId,type) => {
     const followingCount = userProfile.following.length;
     const followersCount = userProfile.followers.length;
     const likes = userProfile.likedTweets;
+    const allTweets = userProfile.tweets;
+    const allRetweets = userProfile.retweetedTweets;
 
     const returnedUser = (({ username, name, followingCount,followersCount, birthdate, tweets, protectedTweets,country,city,bio,website,image,createdAt}) => ({ username, name, followingCount,followersCount, birthdate, tweets, protectedTweets,country,city,bio,website,image,createdAt}))(userProfile);
+    
+    let retweets = await tweet.find({_id: {$in: allRetweets}});
+    let userTweets = await tweet.find({_id: {$in: allTweets}});
+
+    tempTweets = [];
+    userTweets.forEach(function (element) {
+        toReturn = {...element};
+        tempObj = { username:userProfile.username, name:userProfile.name, image:userProfile.image, ...toReturn._doc};
+        delete tempObj.user; 
+        tempTweets.push(tempObj);
+    });
+    returnedUser["tweets"] = tempTweets;
+
+    retweets.forEach(async (element) => {
+        let tweep = await user.findById(element.user);
+        toReturn = {...element};
+        tempObj = { username:tweep.username, name:tweep.name, image:tweep.image, ...toReturn._doc};
+        delete tempObj.user; 
+        returnedUser["tweets"].push(tempObj);
+    });
 
     if(type==='profile') {
-        let no_replies = returnedUser.tweets;
-        let userTweets = await tweet.find({_id: {$in: no_replies}});
-        no_replies = userTweets.filter(x => x.isReply===false);
-        no_replies = no_replies.filter(x => x.isReply===false);
-        returnedUser["tweets"] = no_replies;
+
+        noReplies = returnedUser["tweets"].filter(x => x.isReply===false || x.username!==userProfile.username);
+        returnedUser["tweets"] = noReplies;
     }
     //needs testing
     else if(type==='media') {

@@ -106,6 +106,7 @@ const topUsersPerWeekIncrease = async () => {
     userCount1 = userCount1.length;
     userCount2 = userCount2.length;
 
+    counter = userCount1;
     if(!userCount2) percentage = 100;
     else percentage = (100*(userCount1 - userCount2)/userCount2);
 
