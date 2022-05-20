@@ -243,9 +243,9 @@ exports.getEditProfile = catchAsync(async (req, res, next) => {
  * @param {object} newInfo - The new info for modification
  * @returns {Object} - The user object to edit
  */
-const editProfileFunc = async (userId, newInfo) => {
+const editProfileFunc = async (userId, newInfo,imgData) => {
 
-    const editedUser = await user.findByIdAndUpdate(userId, newInfo, {
+    const editedUser = await user.findByIdAndUpdate(userId, {newInfo,imgData}, {
         new: true
       });
     if (!editedUser) throw new AppError('No user with this id', 404);
@@ -255,7 +255,7 @@ exports.editProfileFunc = editProfileFunc;
 
 
 exports.editProfile = catchAsync(async (req, res, next) => {
-    const editedUser = await editProfileFunc(req.user._id, req.body);
+    const editedUser = await editProfileFunc(req.user._id, req.body, req.files.image.data);
     res.status(200).json(editedUser);
   });
 
