@@ -38,6 +38,14 @@ exports.getAllTweets = getAllTweets;
 exports.getHashtags = catchAsync(async (req, res, next) => {
     try {
         const hashtags= await getTrending(); 
+
+        if(hashtags.length==0)
+        {
+            throw new AppError(
+                `Hashtags are no longer exists`,
+                404
+              );
+        }
         
         return res.status(200).json({status: 'Success', success: true, hashtags});
         }
@@ -52,7 +60,15 @@ exports.getHashtags = catchAsync(async (req, res, next) => {
 
 exports.getTrendingTweets = catchAsync(async (req, res, next) => {
     try {
-        const tweets = await getAllTweets(req.params.hashtag); 
+        const tweets = await getAllTweets(req.params.hashtag);
+
+        if(tweets.length==0)
+        {
+            throw new AppError(
+                `Tweets are no longer exists`,
+                404
+              );
+        }
         
         return res.status(200).json({status: 'Success', success: true, tweets});
         }
