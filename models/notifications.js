@@ -21,6 +21,10 @@ const notificationSchema = new Schema({
     createdAt:{
         type: Date,
         default: Date.now
+    },
+    status:{
+        type: Boolean,
+        default: true
     }
 })
 

@@ -481,7 +481,6 @@ const makeRetweetFunc = async(tweetId, userId)=>{
     //Find the tweet by using the tweet id
         let retweetedTweet = await tweet.findById(tweetId);
  
-        console.log(retweetedTweet)
         
         //If the post is deleted or not found
         if(!retweetedTweet){   
@@ -512,7 +511,8 @@ const makeRetweetFunc = async(tweetId, userId)=>{
        
 
 
-        let userPostedTweet = await user.findById(retweetedTweet.user);
+        let userPostedTweet = await user.findById(retweetedTweet.user.toString());
+
         // creating teh activity to add it in the notification
         let activityUser = new activity({
             sender: userRetweeted,
@@ -1099,6 +1099,7 @@ exports.getNotifications = async(req, res) =>{
             return res.status(404).json({ error: 'user not found' })
         
         let notificationsArray = mainUser.notificationsArray;
+        let countOfNewNotifications = 0
         if(notificationsArray){
             for(let notification of notificationsArray){
                 let mainNotification = await notifications.findById(notification);
@@ -1114,17 +1115,29 @@ exports.getNotifications = async(req, res) =>{
                         tweetId: mainActivity.tweet,
                         mainString: mainNotification.notificationStream,
                         createdAt:  mainNotification.createdAt,
-                  
+                        status: mainNotification.status
+        
                     }
+                    if( mainNotification.status)
+                        countOfNewNotifications++
                     notificationsSent.push(obj);
 
                 }
 
             }
         }
+
+        let sortedArray = []
+        //Sorting the array
+        if(notificationsSent && notificationsSent.length>0){
+            sortedArray = notificationsSent.sort(function(a, b){
+
+                return new Date(b.createdAt ) - new Date(a.createdAt ) ;
+            })
+        }
         mainUser.notificationFlag = false;
         await mainUser.save()
-        return res.status(200).json({message: "Success", notificationsArray: notificationsSent,notificationFlag: mainUser.notificationFlag }); 
+        return res.status(200).json({message: "Success", notificationsArray: sortedArray, countOfNewNotifications: countOfNewNotifications,notificationFlag: mainUser.notificationFlag }); 
 
     }
     catch (err) {
@@ -1265,7 +1278,7 @@ exports.bookmarkTweet = async(req, res)=>{
             mainUser.bookMarkedTweets.push(tweetId)
         }
         await mainUser.save();
-        return res.status(200).json({message: "Success", user: mainUser})
+        return res.status(200).json({message: "Success", bookmarkedTweetsOfUser: mainUser.bookMarkedTweets})
 
     }
     catch (err) {
@@ -1274,7 +1287,41 @@ exports.bookmarkTweet = async(req, res)=>{
     }
 }
 
+exports.getBookmarkedTweets = async(req, res)=>{
+    const userId =req.user.id;
+    try{
+        let mainUser = await user.findById(userId);
+        if(!mainUser)
+            return res.status(404).json({ error: 'user not found' });
+        
+        let bookmarkedTweets = mainUser.bookMarkedTweets;
+        return res.status(200).json({message: "Success", bookmarkedTweets: bookmarkedTweets})
 
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(500).json({error:"Something went wrong"})
+    }
+}
+
+exports.deleteBookmarkedTweets = async(req, res)=>{
+    const userId =req.user.id;
+    try{
+        let mainUser = await user.findById(userId);
+        if(!mainUser)
+            return res.status(404).json({ error: 'user not found' });
+        
+        mainUser.bookMarkedTweets = [];
+        await mainUser.save();
+        return res.status(200).json({message: "Success"})
+
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(500).json({error:"Something went wrong"})
+    }
+
+}
 
 exports.deleteNotification = async(req, res)=>{
     const userId =req.user.id;
@@ -1462,5 +1509,26 @@ exports.getTweetById = async(req, res)=>{
         return res.status(500).json({error:"Something went wrong"})
     }
 
+}
+
+
+exports.patchNotification = async(req, res)=>{
+    const notificationId = req.params.notificationId;
+
+    try{
+        let mainNotification = await notifications.findById(notificationId);
+        if(!mainNotification)
+            return res.status(404).json({ error: 'Notification not found' });
+        
+        mainNotification.status = false;
+        await mainNotification.save();
+
+        return res.status(200).json({message: "Success"})
+
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(500).json({error:"Something went wrong"})
+    }
 }
 

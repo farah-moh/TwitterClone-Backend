@@ -20,13 +20,17 @@ const {
     bookmarkTweet,
     deleteNotification,
     deleteTweet,
-    getTweetById
+    getTweetById,
+    patchNotification,
+    deleteBookmarkedTweets,
+    getBookmarkedTweets
 } = require ('../controllers/homePage');
 
 router.use(authenticationController.protect);
 
 router.get('/', getTweets);
 router.get('/showUsers', showUsers);
+router.get('/bookmarkedTweets', getBookmarkedTweets)
 
 router.get('/:tweetId/getRetweets', getRetweets);
 router.get('/:tweetId/getReplies', getReplies);
@@ -51,6 +55,9 @@ router.post('/:tweetId/makePollChoice', makePollChoice);
 
 router.delete('/:notificationId/deleteNotification', deleteNotification);
 router.delete('/:tweetId/deleteTweet', deleteTweet);
+router.delete('/deleteBookmarkedTweets', deleteBookmarkedTweets)
+
+router.patch('/:notificationId/patchNotification', patchNotification)
 
 module.exports = router;
 
