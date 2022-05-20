@@ -1099,6 +1099,7 @@ exports.getNotifications = async(req, res) =>{
             return res.status(404).json({ error: 'user not found' })
         
         let notificationsArray = mainUser.notificationsArray;
+        let countOfNewNotifications = 0
         if(notificationsArray){
             for(let notification of notificationsArray){
                 let mainNotification = await notifications.findById(notification);
@@ -1117,6 +1118,8 @@ exports.getNotifications = async(req, res) =>{
                         status: mainNotification.status
         
                     }
+                    if( mainNotification.status)
+                        countOfNewNotifications++
                     notificationsSent.push(obj);
 
                 }
@@ -1134,7 +1137,7 @@ exports.getNotifications = async(req, res) =>{
         }
         mainUser.notificationFlag = false;
         await mainUser.save()
-        return res.status(200).json({message: "Success", notificationsArray: sortedArray,notificationFlag: mainUser.notificationFlag }); 
+        return res.status(200).json({message: "Success", notificationsArray: sortedArray, countOfNewNotifications: countOfNewNotifications,notificationFlag: mainUser.notificationFlag }); 
 
     }
     catch (err) {
@@ -1275,7 +1278,7 @@ exports.bookmarkTweet = async(req, res)=>{
             mainUser.bookMarkedTweets.push(tweetId)
         }
         await mainUser.save();
-        return res.status(200).json({message: "Success", user: mainUser})
+        return res.status(200).json({message: "Success", bookmarkedTweetsOfUser: mainUser.bookMarkedTweets})
 
     }
     catch (err) {
@@ -1284,7 +1287,41 @@ exports.bookmarkTweet = async(req, res)=>{
     }
 }
 
+exports.getBookmarkedTweets = async(req, res)=>{
+    const userId =req.user.id;
+    try{
+        let mainUser = await user.findById(userId);
+        if(!mainUser)
+            return res.status(404).json({ error: 'user not found' });
+        
+        let bookmarkedTweets = mainUser.bookMarkedTweets;
+        return res.status(200).json({message: "Success", bookmarkedTweets: bookmarkedTweets})
 
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(500).json({error:"Something went wrong"})
+    }
+}
+
+exports.deleteBookmarkedTweets = async(req, res)=>{
+    const userId =req.user.id;
+    try{
+        let mainUser = await user.findById(userId);
+        if(!mainUser)
+            return res.status(404).json({ error: 'user not found' });
+        
+        mainUser.bookMarkedTweets = [];
+        await mainUser.save();
+        return res.status(200).json({message: "Success"})
+
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(500).json({error:"Something went wrong"})
+    }
+
+}
 
 exports.deleteNotification = async(req, res)=>{
     const userId =req.user.id;
