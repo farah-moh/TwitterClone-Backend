@@ -183,10 +183,10 @@ exports.getTweets = async(req, res)=>{
                     let isLiked = (liked.length == 0)? "false" : "true";
 
                     //Check if its retweeted by the main user
-                    let retweeted = [];
-                    if(mainTweet.retweeted)
-                        retweeted = (mainTweet.retweeted).filter(async (entry)=>{
-                    
+             
+                    console.log(mainTweet.retweeters)
+                    if(mainTweet.retweeters)
+                        retweeted = (mainTweet.retweeters).filter(async (entry)=>{
                             return (entry.toString() === getTweetUser._id.toString())
                         });
                     let isRetweeted = (retweeted.length == 0)? "false" : "true";
@@ -508,6 +508,8 @@ const makeRetweetFunc = async(tweetId, userId)=>{
             await retweetedTweet.save();
         }
 
+        userRetweeted.retweetedTweets.push(tweetId);
+        userRetweeted.save();
        
 
 
@@ -898,7 +900,7 @@ const getRetweetsFunc = async(usersRetweeters)=>{
 exports.getRetweetsFunc = getRetweetsFunc
 
 //Get retweets of a tweet by tweetId
-exports.getRetweets = async(req, res) =>{
+exports.getRetweeters = async(req, res) =>{
     const tweetId = req.params.tweetId;
     try{
         let retweetedTweet = await tweet.findById(tweetId).populate('user').populate({ path: 'body.with', select: '_id name' });
@@ -931,6 +933,28 @@ exports.getRetweets = async(req, res) =>{
         return res.status(500).json({error:"Something went wrong"})
     }
  }
+
+
+exports.getRetweetsUser= async(req, res)=>{
+    const userId =req.user.id;
+
+    try{
+        let mainUser = await user.findById(userId)
+        if(!mainUser)
+            return res.status(404).json({ error: 'user not found' });
+        
+        let retweetedTweets = mainUser.retweetedTweets;
+        return res.status(200).json({message: "Success",retweetedTweets: retweetedTweets});
+
+
+
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(500).json({error:"Something went wrong"})
+    }
+}
+
 /**
  * @description This function is used to know who liked this tweet(tweet id is sent in the parameters)
  * @param {*} req 
@@ -1099,6 +1123,7 @@ exports.getNotifications = async(req, res) =>{
             return res.status(404).json({ error: 'user not found' })
         
         let notificationsArray = mainUser.notificationsArray;
+        let countOfNewNotifications = 0
         if(notificationsArray){
             for(let notification of notificationsArray){
                 let mainNotification = await notifications.findById(notification);
@@ -1117,7 +1142,11 @@ exports.getNotifications = async(req, res) =>{
                         status: mainNotification.status
         
                     }
-                    notificationsSent.push(obj);
+                    if((await user.findById(mainActivity.sender)).username !== (await user.findById( mainActivity.receiver)).username){
+                        if( mainNotification.status)
+                            countOfNewNotifications++
+                        notificationsSent.push(obj);
+                    }
 
                 }
 
@@ -1134,7 +1163,7 @@ exports.getNotifications = async(req, res) =>{
         }
         mainUser.notificationFlag = false;
         await mainUser.save()
-        return res.status(200).json({message: "Success", notificationsArray: sortedArray,notificationFlag: mainUser.notificationFlag }); 
+        return res.status(200).json({message: "Success", notificationsArray: sortedArray, countOfNewNotifications: countOfNewNotifications,notificationFlag: mainUser.notificationFlag }); 
 
     }
     catch (err) {
@@ -1166,32 +1195,111 @@ exports.makePollChoice = async (req, res)=>{
         let index;
         if(choiceNumber == "1"){
             index = pollNew.choice1Statistics.indexOf(userId)
-            if( index == -1)
+            if( index == -1){
                 pollNew.choice1Statistics.push(userId);
+                if(pollNew.choice2Statistics){
+                    let ind = pollNew.choice2Statistics.indexOf(userId)
+                    if(ind !==-1){
+                        pollNew.choice2Statistics.splice(ind, 1);
+                    }
+                }
+                if(pollNew.choice3Statistics){
+                    let ind = pollNew.choice3Statistics.indexOf(userId)
+                    if(ind !==-1){
+                        pollNew.choice3Statistics.splice(ind, 1);
+                    }
+                }
+                if(pollNew.choice4Statistics){
+                    let ind = pollNew.choice4Statistics.indexOf(userId)
+                    if(ind !==-1){
+                        pollNew.choice4Statistics.splice(ind, 1);
+                    }
+                }
+
+
+            }
             else
                 pollNew.choice1Statistics.splice(index, 1);
         }
         
         if(choiceNumber == "2"){
             index = pollNew.choice2Statistics.indexOf(userId)
-            if( index == -1)
+            if( index == -1){
                 pollNew.choice2Statistics.push(userId);
+                if(pollNew.choice1Statistics){
+                    let ind = pollNew.choice1Statistics.indexOf(userId)
+                    if(ind !==-1){
+                        pollNew.choice1Statistics.splice(ind, 1);
+                    }
+                }
+                if(pollNew.choice3Statistics){
+                    let ind = pollNew.choice3Statistics.indexOf(userId)
+                    if(ind !==-1){
+                        pollNew.choice3Statistics.splice(ind, 1);
+                    }
+                }
+                if(pollNew.choice4Statistics){
+                    let ind = pollNew.choice4Statistics.indexOf(userId)
+                    if(ind !==-1){
+                        pollNew.choice4Statistics.splice(ind, 1);
+                    }
+                }
+
+            }
             else
                 pollNew.choice2Statistics.splice(index, 1);
         }
 
         if(choiceNumber == "3"){
             index = pollNew.choice3Statistics.indexOf(userId)
-            if( index == -1)
+            if( index == -1){
                 pollNew.choice3Statistics.push(userId);
+                if(pollNew.choice1Statistics){
+                    let ind = pollNew.choice1Statistics.indexOf(userId)
+                    if(ind !==-1){
+                        pollNew.choice1Statistics.splice(ind, 1);
+                    }
+                }
+                if(pollNew.choice2Statistics){
+                    let ind = pollNew.choice2Statistics.indexOf(userId)
+                    if(ind !==-1){
+                        pollNew.choice2Statistics.splice(ind, 1);
+                    }
+                }
+                if(pollNew.choice4Statistics){
+                    let ind = pollNew.choice4Statistics.indexOf(userId)
+                    if(ind !==-1){
+                        pollNew.choice4Statistics.splice(ind, 1);
+                    }
+                }
+            }
             else
                 pollNew.choice3Statistics.splice(index, 1);
         }
         
         if(choiceNumber == "4"){
             index = pollNew.choice4Statistics.indexOf(userId)
-            if( index == -1)
+            if( index == -1){
                 pollNew.choice4Statistics.push(userId);
+                if(pollNew.choice1Statistics){
+                    let ind = pollNew.choice1Statistics.indexOf(userId)
+                    if(ind !==-1){
+                        pollNew.choice1Statistics.splice(ind, 1);
+                    }
+                }
+                if(pollNew.choice2Statistics){
+                    let ind = pollNew.choice2Statistics.indexOf(userId)
+                    if(ind !==-1){
+                        pollNew.choice2Statistics.splice(ind, 1);
+                    }
+                }
+                if(pollNew.choice3Statistics){
+                    let ind = pollNew.choice3Statistics.indexOf(userId)
+                    if(ind !==-1){
+                        pollNew.choice3Statistics.splice(ind, 1);
+                    }
+                }
+            }
             else
                 pollNew.choice4Statistics.splice(index, 1);
         }
@@ -1227,16 +1335,18 @@ exports.makePollChoice = async (req, res)=>{
             let activityUser = await activity.findOne({sender: mainUser, receiver: userOfTweet, activity: "vote", tweet: pollTweet});
           
             let notification = await notifications.findOne({activity: activityUser})
-            
-            const index2 = userOfTweet.notificationsArray.indexOf(notification._id)
-            if(index2!==-1){
-                userOfTweet.notificationsArray.splice(index2, 1);
-                await userOfTweet.save();
-            }
-            if(activityUser)
-                await activity.findByIdAndDelete(activityUser._id);
-            if(notification)
-                await notifications.findByIdAndDelete(notification._id);
+
+            if(notification){
+                const index2 = userOfTweet.notificationsArray.indexOf(notification._id)
+                if(index2!==-1){
+                    userOfTweet.notificationsArray.splice(index2, 1);
+                    await userOfTweet.save();
+                }
+                if(activityUser)
+                    await activity.findByIdAndDelete(activityUser._id);
+                if(notification)
+                    await notifications.findByIdAndDelete(notification._id);
+                }
 
         }
 
@@ -1275,7 +1385,7 @@ exports.bookmarkTweet = async(req, res)=>{
             mainUser.bookMarkedTweets.push(tweetId)
         }
         await mainUser.save();
-        return res.status(200).json({message: "Success", user: mainUser})
+        return res.status(200).json({message: "Success", bookmarkedTweetsOfUser: mainUser.bookMarkedTweets})
 
     }
     catch (err) {
@@ -1284,7 +1394,41 @@ exports.bookmarkTweet = async(req, res)=>{
     }
 }
 
+exports.getBookmarkedTweets = async(req, res)=>{
+    const userId =req.user.id;
+    try{
+        let mainUser = await user.findById(userId);
+        if(!mainUser)
+            return res.status(404).json({ error: 'user not found' });
+        
+        let bookmarkedTweets = mainUser.bookMarkedTweets;
+        return res.status(200).json({message: "Success", bookmarkedTweets: bookmarkedTweets})
 
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(500).json({error:"Something went wrong"})
+    }
+}
+
+exports.deleteBookmarkedTweets = async(req, res)=>{
+    const userId =req.user.id;
+    try{
+        let mainUser = await user.findById(userId);
+        if(!mainUser)
+            return res.status(404).json({ error: 'user not found' });
+        
+        mainUser.bookMarkedTweets = [];
+        await mainUser.save();
+        return res.status(200).json({message: "Success"})
+
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(500).json({error:"Something went wrong"})
+    }
+
+}
 
 exports.deleteNotification = async(req, res)=>{
     const userId =req.user.id;

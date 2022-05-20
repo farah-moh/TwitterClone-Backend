@@ -243,9 +243,9 @@ exports.getEditProfile = catchAsync(async (req, res, next) => {
  * @param {object} newInfo - The new info for modification
  * @returns {Object} - The user object to edit
  */
-const editProfileFunc = async (userId, newInfo) => {
+const editProfileFunc = async (userId, newInfo,imgData) => {
 
-    const editedUser = await user.findByIdAndUpdate(userId, newInfo, {
+    const editedUser = await user.findByIdAndUpdate(userId, {newInfo,imgData}, {
         new: true
       });
     if (!editedUser) throw new AppError('No user with this id', 404);
@@ -255,7 +255,7 @@ exports.editProfileFunc = editProfileFunc;
 
 
 exports.editProfile = catchAsync(async (req, res, next) => {
-    const editedUser = await editProfileFunc(req.user._id, req.body);
+    const editedUser = await editProfileFunc(req.user._id, req.body, req.files.image.data);
     res.status(200).json(editedUser);
   });
 
@@ -343,7 +343,7 @@ exports.reportProfile = catchAsync(async (req, res, next) => {
     });
   });
 
-  exports.unfollow = catchAsync(async (req, res, next) => {
+exports.unfollow = catchAsync(async (req, res, next) => {
     let meId = req.user.id;
     const toFollow = req.params.username;
     meId = new ObjectId(meId);
@@ -372,4 +372,52 @@ exports.reportProfile = catchAsync(async (req, res, next) => {
         status: 'success',
     });
   });
-  
+
+exports.getFollowers = catchAsync(async (req, res, next) => {
+    let meId = req.user.id;
+    let who = req.params.username;
+    meId = new ObjectId(meId);
+    who = await user.findOne({username: who});
+    let me = await user.findById(meId);
+    let whoID = who._id;
+
+    let followers = who.followers;
+    followers = await user.find({_id: {$in: followers}}).select('username name bio protectedTweets image');
+    let myFollowers = me.followers;
+    let myFollowing = me.following;
+
+    followers = followers.map(obj => ({ ...obj._doc, 
+        followsMe: (myFollowers.includes(obj._id))? true:false,
+        followsHim: (myFollowing.includes(obj._id))? true:false,
+        isMe: (meId.toString() === obj._id.toString())? true:false,
+     }));
+
+    res.status(200).json({
+        status: 'success',
+        followers: followers
+    });
+});
+
+exports.getFollowing = catchAsync(async (req, res, next) => {
+    let meId = req.user.id;
+    let who = req.params.username;
+    meId = new ObjectId(meId);
+    who = await user.findOne({username: who});
+    let me = await user.findById(meId);
+    let whoID = who._id;
+
+    let following = who.following;
+    following = await user.find({_id: {$in: following}}).select('username name bio protectedTweets image');
+    let myFollowers = me.followers;
+    let myFollowing = me.following;
+    following = following.map(obj => ({ ...obj._doc, 
+        followsMe: (myFollowers.includes(obj._id))? true:false,
+        followsHim: (myFollowing.includes(obj._id))? true:false,
+        isMe: (meId.toString() === obj._id.toString())? true:false,
+     }))
+
+    res.status(200).json({
+        status: 'success',
+        following: following
+    });
+});

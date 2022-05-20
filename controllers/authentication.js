@@ -46,7 +46,7 @@ exports.signUp = catchAsync(async (req, res, next) => {
 
     const confirmEmailText = 
     `Click this link to confirm your email\n
-    http://localhost:${process.env.PORT}/signup-confirm/${emailConfirmationToken}\n`;
+    http://34.236.108.123:3000/signup-confirm/${emailConfirmationToken}\n`;
 
     try {
       await sendEmail({

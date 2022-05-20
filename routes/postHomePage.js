@@ -10,7 +10,7 @@ const {
     makeRetweet,
     makeReply,
     showUsers,
-    getRetweets,
+    getRetweeters,
     getLikers,
     getTaggedUsers,
     getReplies,
@@ -21,15 +21,20 @@ const {
     deleteNotification,
     deleteTweet,
     getTweetById,
-    patchNotification
+    patchNotification,
+    deleteBookmarkedTweets,
+    getBookmarkedTweets,
+    getRetweetsUser
 } = require ('../controllers/homePage');
 
 router.use(authenticationController.protect);
 
 router.get('/', getTweets);
 router.get('/showUsers', showUsers);
+router.get('/getRetweets', getRetweetsUser);
+router.get('/bookmarkedTweets', getBookmarkedTweets)
 
-router.get('/:tweetId/getRetweets', getRetweets);
+router.get('/:tweetId/getRetweeters', getRetweeters);
 router.get('/:tweetId/getReplies', getReplies);
 router.get('/:tweetId/getLikers', getLikers);
 router.get('/:tweetId/getTaggedUsers', getTaggedUsers);
@@ -52,6 +57,7 @@ router.post('/:tweetId/makePollChoice', makePollChoice);
 
 router.delete('/:notificationId/deleteNotification', deleteNotification);
 router.delete('/:tweetId/deleteTweet', deleteTweet);
+router.delete('/deleteBookmarkedTweets', deleteBookmarkedTweets)
 
 router.patch('/:notificationId/patchNotification', patchNotification)
 

@@ -17,6 +17,8 @@ router.get('/likes',userController.getProfileLikes);
 router.post('/follow',userController.follow);
 router.delete('/unfollow',userController.unfollow)
 router.patch('/report',userController.reportProfile);
+router.get('/followers',userController.getFollowers);
+router.get('/following',userController.getFollowing);
 
 
 module.exports = router;
