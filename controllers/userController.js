@@ -384,8 +384,13 @@ exports.getFollowers = catchAsync(async (req, res, next) => {
     let followers = who.followers;
     followers = await user.find({_id: {$in: followers}}).select('username name bio protectedTweets image');
     let myFollowers = me.followers;
+    let myFollowing = me.following;
 
-    followers = followers.map(obj => ({ ...obj._doc, followsMe: (myFollowers.includes(obj._id))? true:false }));
+    followers = followers.map(obj => ({ ...obj._doc, 
+        followsMe: (myFollowers.includes(obj._id))? true:false,
+        followsHim: (myFollowing.includes(obj._id))? true:false,
+        isMe: (meId.toString() === obj._id.toString())? true:false,
+     }));
 
     res.status(200).json({
         status: 'success',
@@ -404,8 +409,12 @@ exports.getFollowing = catchAsync(async (req, res, next) => {
     let following = who.following;
     following = await user.find({_id: {$in: following}}).select('username name bio protectedTweets image');
     let myFollowers = me.followers;
-
-    following = following.map(obj => ({ ...obj._doc, followsMe: (myFollowers.includes(obj._id))? true:false }))
+    let myFollowing = me.following;
+    following = following.map(obj => ({ ...obj._doc, 
+        followsMe: (myFollowers.includes(obj._id))? true:false,
+        followsHim: (myFollowing.includes(obj._id))? true:false,
+        isMe: (meId.toString() === obj._id.toString())? true:false,
+     }))
 
     res.status(200).json({
         status: 'success',
