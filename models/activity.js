@@ -15,14 +15,14 @@ const Schema = mongoose.Schema;
 const activitySchema = new Schema({
     sender: {
         type: Schema.ObjectId,
-        ref: 'user',
-        required: true
+        ref: 'user'
+       // required: true
     },
 
     receiver: {
         type: Schema.ObjectId,
-        ref: 'user',
-        required: true
+        ref: 'user'
+        //required: true
     },
 
     activityType: {
