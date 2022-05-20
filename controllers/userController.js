@@ -343,7 +343,7 @@ exports.reportProfile = catchAsync(async (req, res, next) => {
     });
   });
 
-  exports.unfollow = catchAsync(async (req, res, next) => {
+exports.unfollow = catchAsync(async (req, res, next) => {
     let meId = req.user.id;
     const toFollow = req.params.username;
     meId = new ObjectId(meId);
@@ -372,4 +372,43 @@ exports.reportProfile = catchAsync(async (req, res, next) => {
         status: 'success',
     });
   });
-  
+
+exports.getFollowers = catchAsync(async (req, res, next) => {
+    let meId = req.user.id;
+    let who = req.params.username;
+    meId = new ObjectId(meId);
+    who = await user.findOne({username: who});
+    let me = await user.findById(meId);
+    let whoID = who._id;
+
+    let followers = who.followers;
+    followers = await user.find({_id: {$in: followers}}).select('username name bio protectedTweets image');
+    let myFollowers = me.followers;
+
+    followers = followers.map(obj => ({ ...obj._doc, followsMe: (myFollowers.includes(obj._id))? true:false }));
+
+    res.status(200).json({
+        status: 'success',
+        followers: followers
+    });
+});
+
+exports.getFollowing = catchAsync(async (req, res, next) => {
+    let meId = req.user.id;
+    let who = req.params.username;
+    meId = new ObjectId(meId);
+    who = await user.findOne({username: who});
+    let me = await user.findById(meId);
+    let whoID = who._id;
+
+    let following = who.following;
+    following = await user.find({_id: {$in: following}}).select('username name bio protectedTweets image');
+    let myFollowers = me.followers;
+
+    following = following.map(obj => ({ ...obj._doc, followsMe: (myFollowers.includes(obj._id))? true:false }))
+
+    res.status(200).json({
+        status: 'success',
+        following: following
+    });
+});
