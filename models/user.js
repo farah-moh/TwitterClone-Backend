@@ -189,7 +189,12 @@ const userSchema = new Schema({
     quotedRetweets:[{
         type: Schema.ObjectId,
         ref: 'tweet' 
-    }]
+    }],
+
+    deactivated: {
+        type: Boolean,
+        default: false
+    }
 
 },
     {timestamps: true},

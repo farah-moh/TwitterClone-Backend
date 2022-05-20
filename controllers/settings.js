@@ -197,3 +197,23 @@ exports.changeTheme = catchAsync(async (req, res, next) => {
               );
           }
 });
+
+exports.deactivateAccount = catchAsync(async (req, res, next) => {
+  const User = await userById(req.user.id);
+
+  if(User.deactivated==true)
+  User.deactivated=false;
+  else
+  User.deactivated=true;
+  
+  try {
+      await User.save();
+      return res.status(200).json({status: 'Success', success: true});
+      }
+      catch (err) {
+          throw new AppError(
+              `Something went wrong`,
+              500
+            );
+        }
+});

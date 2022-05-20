@@ -19,4 +19,5 @@ router.patch('/Account-info/Username',settingsController.updateUsername);
 router.patch('/Account-info/Protected-tweets',settingsController.protectTweets);
 router.patch('/Notifications',settingsController.pushNotifications);
 router.patch('/Display',settingsController.changeTheme);
+router.patch('/Deactivate-account',settingsController.deactivateAccount);
 module.exports = router;
