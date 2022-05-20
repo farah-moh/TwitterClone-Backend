@@ -170,26 +170,29 @@ exports.getTweets = async(req, res)=>{
                     
                     mainUser = await user.findById(mainTweet.user)
                     //Creating objects that will be sent in json file
-                    let liked = [];
-                    //Check if it's liked by the main user 
                     
-                    if(mainTweet.favoriters)
-                        liked = (mainTweet.favoriters).filter(async (entry)=>{
-                            let user1 = await user.findById(entry)
-                        
-                            return (entry.toString() === getTweetUser._id.toString())
-                        });
-                      
-                    let isLiked = (liked.length == 0)? "false" : "true";
+                    //Check if it's liked by the main user 
+                   
+                    let isLikedNew = false;
+                    if(getTweetUser.likedTweets){
+                        for(let likedTweet of getTweetUser.likedTweets){
+                            if((likedTweet).toString() === (mainTweet._id).toString())
+                                isLikedNew = true
+                        }
+                    }
+                    let isLiked = (isLikedNew)? "true" : "false";
 
                     //Check if its retweeted by the main user
              
-                    console.log(mainTweet.retweeters)
-                    if(mainTweet.retweeters)
-                        retweeted = (mainTweet.retweeters).filter(async (entry)=>{
-                            return (entry.toString() === getTweetUser._id.toString())
-                        });
-                    let isRetweeted = (retweeted.length == 0)? "false" : "true";
+                    let isRetweetedNew = false;
+                    if(getTweetUser.retweetedTweets){
+                        for(let retweetedTweet of getTweetUser.retweetedTweets){
+                            if((retweetedTweet).toString() === (mainTweet._id).toString())
+                                isRetweetedNew = true
+                        }
+                    }
+                
+                    let isRetweeted = (!isRetweetedNew)? "false" : "true";
 
                     //Check if it's bookmarked by the mainUser
                     let isBookmarked = false;
