@@ -74,6 +74,16 @@ class aws {
       return data;
     });
   }
+
+  s3createReadStream(Key, Range) {
+    const params = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key
+    };
+    if (Range) params.Range = Range;
+    this.s3Obj = this.s3.getObject(params);
+    return this.s3Obj.createReadStream();
+  }
 }
 
 module.exports = aws;
