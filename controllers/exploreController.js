@@ -7,6 +7,7 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
 const getTrending= async() => {
+    const arr= ["Sports","News","Entertainment"];
     //Reurn hashtags only
     const trends= await tweet.find().select('hashtags');
     //Return array of arrays of hashtags
@@ -19,9 +20,42 @@ const getTrending= async() => {
     if(result2.length > 10)
     {
     const hashtags = await result2.splice(10,result2.length-10);
-    return hashtags;
+    const tweetsCount=[];
+    for (let i=0;i<hashtags.length;i++)
+    {
+        const tweets= await getAllTweets(hashtags[i]);
+        tweetsCount.push(tweets.length);
     }
-    return result2;
+    const data = await hashtags.map(function(bdy,i)
+    {
+        return {
+            rank: i+1,
+            body: bdy,
+            tweetsCount: tweetsCount[i],
+            type: arr[Math.floor(Math.random() * arr.length)],
+            id: Math.random().toString(36).slice(2,11)
+        };
+    })
+    return data;
+    }
+    
+    const tweetsCount=[];
+    for (let i=0;i<result2.length;i++)
+    {
+        const tweets= await getAllTweets(result2[i]);
+        tweetsCount.push(tweets.length);
+    }
+    const data = await result2.map(function(bdy,i)
+    {
+        return {
+            rank: i+1,
+            body: bdy,
+            tweetsCount: tweetsCount[i],
+            type: arr[Math.floor(Math.random() * arr.length)],
+            id: Math.random().toString(36).slice(2,11)
+        };
+    })
+    return data;
 }
 exports.getTrending = getTrending;
 
