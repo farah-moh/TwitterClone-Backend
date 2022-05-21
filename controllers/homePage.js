@@ -347,16 +347,18 @@ exports.likeTweet = async(req, res)=>{
             let userLiked  = await user.findById(userId);
             
             
-            const index3 = userLiked.likedTweets.indexOf(tweetId)
+            let index3 = userLiked.likedTweets.indexOf(tweetId)
+
             if(index3!==-1){
-                userLiked.likedTweets.splice(index3, 1);
+                userLiked.likedTweets.splice(index3, 1);  
                 await userLiked.save();
+              
             }
             let activityUser = await activity.findOne({sender: userLiked, receiver: tweetOfUser, activity: "like", tweet: tweetLiked});
             
             let notification = await notifications.findOne({activity: activityUser})
             
-            const index2 = tweetOfUser.notificationsArray.indexOf(notification._id)
+            let index2 = tweetOfUser.notificationsArray.indexOf(notification._id)
             if(index2!==-1){
                 tweetOfUser.notificationsArray.splice(index2, 1);
                 //await tweetOfUser.save();
@@ -368,7 +370,7 @@ exports.likeTweet = async(req, res)=>{
 
             
       
-            return res.status(200).json({message: "removed like"});
+            return res.status(200).json({message: "removed like", user: userLiked});
         }
 
 
@@ -723,7 +725,7 @@ const makeRetweetFunc = async(tweetId, userId)=>{
         //Then we must add tweet created to the retweetedTweet's replies
         retweetedTweet.replies.push(createdTweet);
         await retweetedTweet.save();
-        return res.status(200).json({message: "Replied successfully", tweet: retweetedTweet});
+        return res.status(200).json({message: "Replied successfully"});
     }
     catch (err) {
         console.log(err)
@@ -1098,14 +1100,15 @@ exports.getReplies = async(req, res) =>{
                         replies: replyOfUser.replies,
                         retweeters: replyOfUser.retweeters,
                         favoriters: replyOfUser.favoriters,
-                        isReply: replyOfUser.isReply
+                        isReply: replyOfUser.isReply,
+                        hashtags: replyOfUser.hashtags
                     }
                     //Pushing data to the array
                     dataUsers.push(data);
                 }
             }
         }
-        return res.status(200).json({message: "Success", users: dataUsers, count: replies.length}); 
+        return res.status(200).json({message: "Success", Replies: dataUsers, count: replies.length}); 
     }
     catch (err) {
         console.log(err)
