@@ -227,11 +227,31 @@ exports.getReports = catchAsync(async (req, res, next) => {
     currUserReports = await report.find({_id: {$in: currUserReports.reports}}).sort({"type": 1});
     let users = currUserReports.map(x => x.whoReported);
 
-    users = await user.find({_id: {$in: users}}).select('-_id username name image');
+    users = await user.find({_id: {$in: users}}).select('_id username name image');
 
     currUserReports = currUserReports.map((currElement, index) => {
-        return {message: currElement.message, whoReported: users[index]};
+        return {message: currElement.message, whoReported: users.filter(x => x._id.toString() == currElement.whoReported.toString())};
     });
+    currUserReports = currUserReports.reduce((result, currentValue) => {
+        (result[currentValue['message']] = result[currentValue['message']] || []).push(
+          currentValue
+        );
+        return result;
+      }, {});
+
+    currUserReports['type1'] = currUserReports['I\'m not interested in this account.'];
+    delete currUserReports['I\'m not interested in this account.'];
+    currUserReports['type2'] = currUserReports['It\'s suspicious or spam.'];
+    delete currUserReports['It\'s suspicious or spam.'];
+    currUserReports['type3'] = currUserReports['It appears their account is hacked.'];
+    delete currUserReports['It appears their account is hacked.'];
+    currUserReports['type4'] = currUserReports['They are pretending to be me or someone else.'];
+    delete currUserReports['They are pretending to be me or someone else.'];
+    currUserReports['type5'] = currUserReports['Their tweets are abusive or hateful.'];
+    delete currUserReports['Their tweets are abusive or hateful.'];
+    currUserReports['type6'] = currUserReports['They are expressing intentions of self-harm or suicide'];
+    delete currUserReports['They are expressing intentions of self-harm or suicide'];
+
     res.status(200).json({
         success: 'true',
         reports: currUserReports
