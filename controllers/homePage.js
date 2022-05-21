@@ -385,8 +385,8 @@ exports.likeTweet = async(req, res)=>{
         let tweetOfUser = await user.findById(tweetLiked.user);
         let userLiked  = await user.findById(userId);
 
-        userLiked.likedTweets.push(tweetId)
-        await userLiked.save()
+        userLiked.likedTweets.push(tweetId);
+        await userLiked.save();
         //creating the activity 
          let activityUser = new activity({
              sender: userLiked,
@@ -586,7 +586,9 @@ const makeRetweetFunc = async(tweetId, userId)=>{
             user: userId,
             isReply: true    
             });
-    
+
+            let replier = user.findById(userId);
+            console.log(replier);
             //Adding body if exists
             if(body)
                 createdTweet.body = body;
@@ -609,6 +611,8 @@ const makeRetweetFunc = async(tweetId, userId)=>{
             await createdTweet.save();
             //Then we must add tweet created to the retweetedTweet's replies
             retweetedTweet.replies.push(createdTweet);
+            replier.push(createdTweet._id);
+            await replier.save();
             await retweetedTweet.save();
             return retweetedTweet
  }
@@ -644,6 +648,9 @@ const makeRetweetFunc = async(tweetId, userId)=>{
         user: userId,
         isReply: true    
         });
+        let replier = await user.findById(userId.toString());
+        console.log(replier);
+
         //Adding body if exists
         if(body)
             createdTweet.body = body;
@@ -664,6 +671,8 @@ const makeRetweetFunc = async(tweetId, userId)=>{
         if(media)
             createdTweet.media=media;
         // save it in the datebase to find it by tweet id saved in replies
+        replier.tweets.push(createdTweet._id);
+        await replier.save();
         await createdTweet.save();
         //Then we have to find the tweet the user is trying to reply on it
         
