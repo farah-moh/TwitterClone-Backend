@@ -10,8 +10,8 @@ const AppError = require('../utils/appError');
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
 const sendEmail = require('./../utils/email_info');
-const { _infoTransformers } = require('passport/lib');
-const authentication = require('./authentication')
+const {  _infoTransformers } = require('passport/lib');
+const authentication = require('./authentication');
 
 /**
  * @description - Takes user ID and and returns its info
@@ -31,7 +31,8 @@ const getProfile = async (userId,type) => {
     
     let retweets = await tweet.find({_id: {$in: allRetweets}});
     let userTweets = await tweet.find({_id: {$in: allTweets}});
-
+    let likedTweets = await tweet.find({_id: {$in: likes}});
+    //console.log(likedTweets);
     tempTweets = [];
     userTweets.forEach(function (element) {
         toReturn = {...element};
@@ -67,7 +68,17 @@ const getProfile = async (userId,type) => {
         delete returnedUser.tweets;
     }
     else if(type==='likes') {
-        returnedUser["likes"] = likes;
+        tempLikes = [];
+        returnedUser["likes"] = [];
+        likedTweets.forEach(function (element)  {
+            let tweep =  user.findById(element.user).select('username name image');
+            toReturn = {...element};
+            tempObj = { username:tweep.username, name:tweep.name, image:tweep.image, ...toReturn._doc};
+            delete tempObj.user; 
+            tempLikes.push(tempObj);
+            returnedUser["likes"] = returnedUser["likes"].concat(tempLikes);
+        });
+        returnedUser["likes"].push(tempLikes);
         delete returnedUser.tweets;
     }
     returnedUser["followingCount"] = followingCount;

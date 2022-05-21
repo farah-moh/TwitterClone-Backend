@@ -383,8 +383,8 @@ exports.likeTweet = async(req, res)=>{
         let tweetOfUser = await user.findById(tweetLiked.user);
         let userLiked  = await user.findById(userId);
 
-        userLiked.likedTweets.push(tweetId)
-        await userLiked.save()
+        userLiked.likedTweets.push(tweetId);
+        await userLiked.save();
         //creating the activity 
          let activityUser = new activity({
              sender: userLiked,
