@@ -194,7 +194,12 @@ const userSchema = new Schema({
     deactivated: {
         type: Boolean,
         default: false
-    }
+    },
+
+    followRequests:[{
+        type: Schema.ObjectId,
+        ref: 'user' 
+    }],
 
 },
     {timestamps: true},

@@ -331,18 +331,30 @@ exports.reportProfile = catchAsync(async (req, res, next) => {
 
     let notMeId = await user.findOne({username: toFollow}).select('_id');
     notMeId = notMeId._id;
-
     let alreadyFollows = await follow.find({follower: meId, following: notMeId});
     console.log(alreadyFollows);
     if(alreadyFollows.length) {
-        res.status(200).json({
+        return res.status(200).json({
             status: 'already follows',
           });
     }
-    await follow.create({follower:meId, following: notMeId});
-
-    const me = await user.findById(meId);
     const notMe = await user.findById(notMeId);
+    if(notMe.protectedTweets) {
+        const me = await user.findById(meId);
+        if(notMe.followRequests.indexOf(meId)!==-1)
+        {
+            return res.status(200).json({
+                status: 'Follow request already sent',
+              });
+        }
+        notMe.followRequests.push(me);
+        await notMe.save();
+        return res.status(200).json({
+            status: 'Follow request sent',
+          });
+    }
+    await follow.create({follower:meId, following: notMeId});
+    const me = await user.findById(meId);
     me.following.push(notMeId.toString());
     notMe.followers.push(meId.toString());
 
@@ -430,5 +442,63 @@ exports.getFollowing = catchAsync(async (req, res, next) => {
     res.status(200).json({
         status: 'success',
         following: following
+    });
+});
+
+exports.getFollowRequests = catchAsync(async (req, res, next) => {
+    const User = await user.findOne({_id: req.user.id});
+    const requests = User.followRequests;
+    const usersArr = [];
+    for (let i=0;i<requests.length;i++)
+    {
+        const requested = await user.findOne({_id: requests[i]});
+        usersArr.push(requested);
+    }
+    if (usersArr.length===0)
+    {
+       return res.status(404).json({
+            status: 'No follow requests'
+        }); 
+    }
+    res.status(200).json({
+        status: 'success ',
+        usersArr
+    }); 
+});
+
+exports.acceptFollowRequests = catchAsync(async (req, res, next) => {
+    let meId = req.user.id;
+    const toFollowMe = req.body.username;
+    meId = new ObjectId(meId);
+
+    let notMeId = await user.findOne({username: toFollowMe}).select('_id');
+    notMeId = notMeId._id;
+    let alreadyFollows = await follow.find({follower: notMeId, following: meId});
+    if(alreadyFollows.length) {
+        return res.status(200).json({
+            status: 'already following',
+          });
+    }
+
+    await follow.create({follower:notMeId, following: meId});
+    const me = await user.findById(meId);
+    const notMe = await user.findById(notMeId);
+    me.followers.push(notMeId.toString());
+    notMe.following.push(meId.toString());
+    
+    await me.save();
+    await notMe.save();
+    
+    await user.updateOne({_id: meId}, {$pull: {followRequests: notMeId}});
+
+    res.status(200).json({
+        status: 'success',
+    });
+});
+
+exports.rejectFollowRequests = catchAsync(async (req, res, next) => {
+    await user.updateOne({_id: req.user.id}, {$pull: {followRequests: req.body.id}});
+    res.status(200).json({
+        status: 'success',
     });
 });
