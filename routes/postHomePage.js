@@ -1,6 +1,7 @@
 const router = require('express').Router()
 const authenticationController = require('./../controllers/authentication');
 const userController = require('./../controllers/userController');
+const whoToFollowController = require('./../controllers/whoToFollowController');
 
 const {
     postTweet,
@@ -63,7 +64,8 @@ router.delete('/deleteBookmarkedTweets', deleteBookmarkedTweets)
 router.patch('/:notificationId/patchNotification', patchNotification)
 router.get('/Follow-requests', userController.getFollowRequests);
 router.post('/Follow-requests/accept', userController.acceptFollowRequests);
-router.delete('/Follow-requests/reject',userController.rejectFollowRequests);
+router.delete('/Follow-requests/reject', userController.rejectFollowRequests);
+router.get('/Who-to-follow', whoToFollowController.whoToFollow);
 
 module.exports = router;
 
