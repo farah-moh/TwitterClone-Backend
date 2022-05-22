@@ -90,6 +90,17 @@ exports.search = catchAsync(async (req, res, next) => {
     if (types.includes('user')) response.users = await getUsers(regex, req.query);
     if (types.includes('media')) response.tweets = await getTweetsMedia(regex, req.query);
     if (types.includes('latest')) response.tweets = await getTweetsLatest(regex, req.query);
+    if(response.tweets) {
+      let tempTweets = [];
+      for (const element of response.tweets) {
+        let tweep = await user.findById(element.user);
+        toReturn = {...element};
+        tempObj = { username:tweep.username, name:tweep.name, image:tweep.image, ...toReturn._doc};
+        delete tempObj.user; 
+        tempTweets.push(tempObj);
+      }
+    response.tweets = tempTweets;
+    }
   
     res.status(200).json(response);
 });

@@ -20,6 +20,12 @@ const authentication = require('./authentication');
  * @returns {Object} User object
  */
 const getProfile = async (userId,type) => {
+    const sortByDate = arr => {
+        const sorter = (a, b) => {
+           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+        arr.sort(sorter);
+    };
     const userProfile = await user.findById(userId);
     const followingCount = userProfile.following.length;
     const followersCount = userProfile.followers.length;
@@ -32,7 +38,8 @@ const getProfile = async (userId,type) => {
     let retweets = await tweet.find({_id: {$in: allRetweets}});
     let userTweets = await tweet.find({_id: {$in: allTweets}});
     let likedTweets = await tweet.find({_id: {$in: likes}});
-    //console.log(likedTweets);
+    let mediaTweets = userTweets.filter(x => x.media.length > 0);
+
     tempTweets = [];
     userTweets.forEach(function (element) {
         toReturn = {...element};
@@ -42,43 +49,44 @@ const getProfile = async (userId,type) => {
     });
     returnedUser["tweets"] = tempTweets;
 
-    retweets.forEach(async (element) => {
-        let tweep = await user.findById(element.user);
+    for (const element of retweets) {
+        let tweep =  await user.findById(element.user).select('username name image');
         toReturn = {...element};
         tempObj = { username:tweep.username, name:tweep.name, image:tweep.image, ...toReturn._doc};
         delete tempObj.user; 
         returnedUser["tweets"].push(tempObj);
-    });
-
+    }
+    sortByDate(returnedUser["tweets"]);
+    
     if(type==='profile') {
-
         noReplies = returnedUser["tweets"].filter(x => x.isReply===false || x.username!==userProfile.username);
+        sortByDate(noReplies);
         returnedUser["tweets"] = noReplies;
     }
     //needs testing
     else if(type==='media') {
-        let imageTweet = returnedUser.tweets.find(x=> x.media.length > 0);
-        let images = [];
-        for(let tweet in imageTweet) {
-            for(let image of tweet.media) {
-                images.push(image);
-            }
-        }
-        returnedUser["media"] = images;
-        delete returnedUser.tweets;
+        tempMedia = [];
+        mediaTweets.forEach(function (element) {
+            toReturn = {...element};
+            tempObj = { username:userProfile.username, name:userProfile.name, image:userProfile.image, ...toReturn._doc};
+            delete tempObj.user; 
+            tempMedia.push(tempObj);
+        });     
+        sortByDate(tempMedia);  
+        returnedUser["tweets"] = tempMedia;
     }
     else if(type==='likes') {
         tempLikes = [];
-        returnedUser["likes"] = [];
-        likedTweets.forEach(function (element)  {
-            let tweep =  user.findById(element.user).select('username name image');
+        for (const element of likedTweets) {
+            let tweep =  await user.findById(element.user).select('username name image');
+            console.log(tweep);
             toReturn = {...element};
             tempObj = { username:tweep.username, name:tweep.name, image:tweep.image, ...toReturn._doc};
             delete tempObj.user; 
             tempLikes.push(tempObj);
-            returnedUser["likes"] = returnedUser["likes"].concat(tempLikes);
-        });
-        returnedUser["likes"].push(tempLikes);
+          }
+        sortByDate(tempLikes);
+        returnedUser["likes"] = tempLikes;
         delete returnedUser.tweets;
     }
     returnedUser["followingCount"] = followingCount;
