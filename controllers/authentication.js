@@ -46,7 +46,7 @@ exports.signUp = catchAsync(async (req, res, next) => {
 
     const confirmEmailText = 
     `Click this link to confirm your email\n
-    http://localhost:${process.env.PORT}/signup-confirm/${emailConfirmationToken}\n`;
+    http://34.236.108.123:3000/signup-confirm/${emailConfirmationToken}\n`;
 
     try {
       await sendEmail({
@@ -318,7 +318,44 @@ const protectService = async req => {
   req.user = foundUser;
 };
 
+/**
+ * @description Protect middleware that checks if the sent token is correct and the user is logged in & is an Admin
+ * @param {Object} req Request object.
+ */
+
+ const protectServiceAdmin = async req => {
+  let token = null;
+  //getting token from header & removing bearer
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    throw new AppError('You are not logged in! Please log in to access.', 401);
+  }
+
+  //verifying token
+  const verified = await promisify(jwt.verify)(token, process.env.JWT_SECRET) // error handling
+
+  //finding user from token
+  const foundUser = await user.findById(verified.id);
+  
+  if(!foundUser) {
+    throw new AppError('The user belonging to this token no longer exists', 401);
+  }
+  if(!foundUser.isAdmin) {
+    throw new AppError('The user is not an admin', 401);
+  }
+  req.user = foundUser;
+};
+
 exports.protect = catchAsync(async (req, res, next) => {
   await protectService(req);
   next();
 });
+
+exports.protectAdmin = catchAsync(async (req, res, next) => {
+  await protectServiceAdmin(req);
+  next();
+});
+

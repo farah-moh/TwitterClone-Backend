@@ -124,6 +124,11 @@ const userSchema = new Schema({
         ref: 'tweet'
     }],
 
+    reports: [{
+        type: Schema.ObjectId,
+        ref: 'report'
+    }],
+
     image: {
         type: String,
         default: null
@@ -180,10 +185,21 @@ const userSchema = new Schema({
         type: Boolean,
         default: false
     },
+
     quotedRetweets:[{
         type: Schema.ObjectId,
         ref: 'tweet' 
-    }]
+    }],
+
+    deactivated: {
+        type: Boolean,
+        default: false
+    },
+
+    followRequests:[{
+        type: Schema.ObjectId,
+        ref: 'user' 
+    }],
 
 },
     {timestamps: true},
