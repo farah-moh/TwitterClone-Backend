@@ -6,6 +6,7 @@ const notifications = require('../models/notifications');
 const activity = require('../models/activity');
 const { findById } = require('../models/user');
 const poll = require('../models/poll');
+const retweet = require('../models/retweet');
 
 /**
  * @description This function is used to post a tweet and save it in the database
@@ -145,6 +146,7 @@ exports.getTweets = async(req, res)=>{
 
         //the user requested
         let getTweetUser = mainUser;
+        let retweetsSent = [];
        
         if(!mainUser)
             return res.status(500).json({error:"There is no user with this id!"});
@@ -158,6 +160,43 @@ exports.getTweets = async(req, res)=>{
                 let userFollowed = await user.findById(followedUser)
                 if(userFollowed.tweets && userFollowed.tweets.length!=0)
                     tweets = tweets.concat(userFollowed.tweets);
+                if(userFollowed.quotedRetweets && userFollowed.quotedRetweets.length!=0)
+                    tweets = tweets.concat(userFollowed.quotedRetweets);
+
+                    if(followedUser.retweetedTweets){
+                        for(let retweetMainUser of followedUser.retweetedTweets){
+                            let retweetActivity = await retweet.findOne({tweet: retweetMainUser, retweeter: followedUser._id })
+                            let data = {
+                                tweetId: retweetMainUser,
+                                username: followedUser.username,
+                                image: followedUser.image,
+                                name: followedUser.name,
+                                createdAt: (retweetActivity)? retweetActivity.createdAt:new Date(2022/3/1),
+                                isRetweet: true
+                            }
+                            retweetsSent.push(data);
+                            
+                        }
+                    }
+            }
+        }
+        if(mainUser.quotedRetweets){
+            tweets = tweets.concat(mainUser.quotedRetweets)
+        }
+        
+        if(mainUser.retweetedTweets){
+            for(let retweetMainUser of mainUser.retweetedTweets){
+                let retweetActivity = await retweet.findOne({tweet: retweetMainUser, retweeter: mainUser._id })
+                let data = {
+                    tweetId: retweetMainUser,
+                    username: mainUser.username,
+                    image: mainUser.image,
+                    name: mainUser.name,
+                    createdAt: (retweetActivity)? retweetActivity.createdAt:new Date(2022/3/1),
+                    isRetweet: true
+                }
+                retweetsSent.push(data);
+                
             }
         }
         // loop on tweeets
@@ -166,7 +205,7 @@ exports.getTweets = async(req, res)=>{
                 //Is The tweet written by the user & not reply & not a quoted tweet?
                 let mainTweet = await tweet.findById(i);
                 let date = new Date();
-                if(mainTweet && (mainTweet.createdAt <= date) && !mainTweet.isReply && !mainTweet.isQuotedRetweet){
+                if(mainTweet && (mainTweet.createdAt <= date) && !mainTweet.isReply){
                     
                     mainUser = await user.findById(mainTweet.user)
                     //Creating objects that will be sent in json file
@@ -217,24 +256,49 @@ exports.getTweets = async(req, res)=>{
                     let fourthChoice = "";
                     let fourthChoiceStats = 0;
                     //Calculating the stats
+                    
+                    let pollChoice = -1;
+                    let newPoll;
                     if(mainTweet.poll){
                         let sum = 0;
-                        let newPoll = await polls.findById(mainTweet.poll)
+                        newPoll = await polls.findById(mainTweet.poll)
                         if(newPoll.choice1){
                             sum += newPoll.choice1Statistics.length;
                             firstChoice = newPoll.choice1;
+                            for(let userVote of newPoll.choice1Statistics){
+                                if(getTweetUser._id.toString() === userVote._id.toString)
+                                    pollChoice = 1;
+                            }
                         }
                         if(newPoll.choice2){
                             sum += newPoll.choice2Statistics.length;
                             secondChoice =newPoll.choice2;
+                            if(pollChoice === -1){
+                                for(let userVote of newPoll.choice2Statistics){
+                                    if(getTweetUser._id.toString() === userVote._id.toString)
+                                        pollChoice = 2;
+                                }
+                            }
                         }
                         if(newPoll.choice3){
                             sum += newPoll.choice3Statistics.length;
                             thirdChoice = newPoll.choice3;
+                            if(pollChoice === -1){
+                                for(let userVote of newPoll.choice3Statistics){
+                                    if(getTweetUser._id.toString() === userVote._id.toString)
+                                        pollChoice = 3;
+                                }
+                            }
                         }
                         if(newPoll.choice4){
                             sum +=newPoll.choice4Statistics.length;
                             fourthChoice = newPoll.choice4;
+                            if(pollChoice === -1){
+                                for(let userVote of newPoll.choice4Statistics){
+                                    if(getTweetUser._id.toString() === userVote._id.toString)
+                                        pollChoice = 4;
+                                }
+                            }
                         }
                         if(newPoll.choice1 && sum!=0)
                             firstChoiceStats = (newPoll.choice1Statistics.length)/sum
@@ -273,17 +337,25 @@ exports.getTweets = async(req, res)=>{
                         isLikedByUser: isLiked,
                         isRetweetedByUser: isRetweeted,
                         isBookmarkedByUser: isBookmarked,
-                        isAdmin: mainUser.isAdmin,
                         poll: poll,
                         firstChoice: firstChoice,
                         firstChoiceStats: firstChoiceStats*100,
+                        numberOfVoters1: (newPoll)?newPoll.choice1Statistics.length:0,
                         secondChoice: secondChoice,
                         secondChoiceStats: secondChoiceStats*100,
+                        numberOfVoters2: newPoll?newPoll.choice2Statistics.length:0,
                         thirdChoice: thirdChoice,
                         thirdChoiceStats: thirdChoiceStats*100,
+                        numberOfVoters3: newPoll?newPoll.choice3Statistics.length:0,
                         fourthChoice: fourthChoice,
                         fourthChoiceStats: fourthChoiceStats*100,
-                        hashtags: mainTweet.hashtags
+                        numberOfVoters4: newPoll?newPoll.choice4Statistics.length:0,
+                        userVotedOn: pollChoice,
+                        hashtags: mainTweet.hashtags,
+                        isReply: mainTweet.isReply,
+                        isQuoteRetweet: mainTweet.isQuoteRetweet,
+                        idOfTweetQuoted: (mainTweet.isQuoteRetweet)?mainTweet.idOfQuotedTweet:"",
+                        isRetweet: false
                         
                     }
                     //pushing it to the array.
@@ -293,6 +365,8 @@ exports.getTweets = async(req, res)=>{
         }
         
 
+
+
        //Sorting the array
         if(dataSent && dataSent.length>0){
             sortedArray = dataSent.sort(function(a, b){
@@ -301,7 +375,7 @@ exports.getTweets = async(req, res)=>{
             })
         }  
         //3ayzeen retweets terga3?
-        return res.status(200).json({data: sortedArray, succes: "true", userName: getTweetUser.username,name:getTweetUser.name});
+        return res.status(200).json({data: sortedArray, succes: "true", userImage: getTweetUser.image, isAdmin: getTweetUser.isAdmin, userName: getTweetUser.username,name:getTweetUser.name, retweetsSent: retweetsSent});
     }
     catch (err) {
         console.log(err)
@@ -347,16 +421,18 @@ exports.likeTweet = async(req, res)=>{
             let userLiked  = await user.findById(userId);
             
             
-            const index3 = userLiked.likedTweets.indexOf(tweetId)
+            let index3 = userLiked.likedTweets.indexOf(tweetId)
+
             if(index3!==-1){
-                userLiked.likedTweets.splice(index3, 1);
+                userLiked.likedTweets.splice(index3, 1);  
                 await userLiked.save();
+              
             }
             let activityUser = await activity.findOne({sender: userLiked, receiver: tweetOfUser, activity: "like", tweet: tweetLiked});
             
             let notification = await notifications.findOne({activity: activityUser})
             
-            const index2 = tweetOfUser.notificationsArray.indexOf(notification._id)
+            let index2 = tweetOfUser.notificationsArray.indexOf(notification._id)
             if(index2!==-1){
                 tweetOfUser.notificationsArray.splice(index2, 1);
                 //await tweetOfUser.save();
@@ -479,7 +555,7 @@ exports.createUser= async(req, res)=>{
   * @param {String} userId 
   * @returns {Object}
   */
-const makeRetweetFunc = async(tweetId, userId)=>{
+const makeRetweetFunc = async(tweetId, userId, msg)=>{
 
     //Find the tweet by using the tweet id
         let retweetedTweet = await tweet.findById(tweetId);
@@ -502,48 +578,84 @@ const makeRetweetFunc = async(tweetId, userId)=>{
         //Search if this user retweeted this tweet
         const isFoundUser = retweetedTweet.retweeters.indexOf(userId);
 
-
+        let userPostedTweet = await user.findById(retweetedTweet.user.toString());
         //If it's the first time to retweet 
         if(isFoundUser === -1){
             retweetedTweet.retweeters.push(userId);
            
             //retweetedTweet.user = userId;
             await retweetedTweet.save();
+
+            // creating teh activity to add it in the notification
+            let activityUser = new activity({
+                sender: userRetweeted,
+                receiver: userPostedTweet,
+                activityType: "retweet",
+                tweet: retweetedTweet
+            })
+            await activityUser.save()
+            //creating the notification using the activity created above
+            let notification = new notifications({
+                activity: activityUser,
+                notificationStream: `${userRetweeted.name} retweeted your tweet`
+
+            })
+            await notification.save()
+
+            //Pushing the notification to the user who posted the tweet
+            userPostedTweet.notificationsArray.push(notification._id)
+            userPostedTweet.notificationFlag = true;
+            await userPostedTweet.save()
+
+
+            //Adding retweet to retweet model
+            let newRetweet = new retweet({
+                retweeter: userId,
+                tweet: tweetId
+            })
+            await newRetweet.save();
+            //Adding the retweet to the user 
+            userRetweeted.retweetedTweets.push(tweetId);
+            await userRetweeted.save();
+            msg = "Retweeted successfully";
         }
-
-        userRetweeted.retweetedTweets.push(tweetId);
-        userRetweeted.save();
-       
-
-
-        let userPostedTweet = await user.findById(retweetedTweet.user.toString());
-
-        // creating teh activity to add it in the notification
-        let activityUser = new activity({
-            sender: userRetweeted,
-            receiver: userPostedTweet,
-            activityType: "retweet",
-            tweet: retweetedTweet
-        })
-        await activityUser.save()
-        //creating the notification using the activity created above
-        let notification = new notifications({
-            activity: activityUser,
-            notificationStream: `${userRetweeted.name} retweeted your tweet`
-
-        })
-        await notification.save()
-
-        //Pushing the notification to the user who posted the tweet
-        userPostedTweet.notificationsArray.push(notification._id)
-        userPostedTweet.notificationFlag = true;
-        await userPostedTweet.save()
+        else{
+            retweetedTweet.retweeters.splice(isFoundUser, 1);
+            await retweetedTweet.save();
+          
 
 
-        //Adding the retweet to the user 
-        userRetweeted.retweetedTweets.push(tweetId);
-        await userRetweeted.save();
-        return userRetweeted;
+            let index = userRetweeted.retweetedTweets.indexOf(tweetId);
+            //nafs el codeee harfyan nafso ahh 3ahsan splice tshtghal we hwa bykhosh sah
+
+            if(index !== -1){
+                userRetweeted.retweetedTweets.splice(index, 1);
+                await userRetweeted.save(); //ehh el habal da ssanya
+            }
+
+            let activityRetweet = await activity.findOne({sender: userRetweeted,
+                receiver: userPostedTweet,
+                activityType: "retweet",
+                tweet: retweetedTweet});
+
+            let notificationRetweet;
+            if(activityRetweet){
+                notificationRetweet = await notifications.findOne({activity: activityRetweet})
+            }
+
+            let retweetActivity = await retweet.findOne({tweet: tweetId, retweeter: userId });
+            if(retweetActivity)
+                await retweet.findByIdAndDelete(retweetActivity._id);
+            
+
+            if(notificationRetweet)
+                await notifications.findByIdAndDelete(notificationRetweet._id);
+            
+            msg = "Retweet removed";
+
+        }
+        
+        return msg;
 }
  exports.makeRetweetFunc =makeRetweetFunc
 
@@ -552,11 +664,11 @@ const makeRetweetFunc = async(tweetId, userId)=>{
     const userId =req.user.id;
 
     try{    
-       
-        const userRetweeted = await makeRetweetFunc(tweetId, userId);
+       let msg = "";
+        const userRetweeted = await makeRetweetFunc(tweetId, userId, msg);
 
         //Retweeted successfully
-        return res.status(200).json({message: "Retweeted successfully"});
+        return res.status(200).json({message: userRetweeted});
     }
     catch (err) {
         console.log(err)
@@ -732,7 +844,7 @@ const makeRetweetFunc = async(tweetId, userId)=>{
         //Then we must add tweet created to the retweetedTweet's replies
         retweetedTweet.replies.push(createdTweet);
         await retweetedTweet.save();
-        return res.status(200).json({message: "Replied successfully", tweet: retweetedTweet});
+        return res.status(200).json({message: "Replied successfully"});
     }
     catch (err) {
         console.log(err)
@@ -1068,6 +1180,9 @@ exports.getTaggedUsers = async(req, res) =>{
 
 exports.getReplies = async(req, res) =>{
     const tweetId = req.params.tweetId;
+    const userId =req.user.id;
+
+
     try{
         let retweetedTweet = await tweet.findById(tweetId).populate('user').populate({ path: 'body.with', select: '_id name' });
 
@@ -1092,6 +1207,39 @@ exports.getReplies = async(req, res) =>{
                         }
                     }
                     let user1 = await user.findById(replyOfUser.user);
+
+                    let mainUser = await user.findById(userId)
+                    let isLikedNew = false;
+                    if(mainUser.likedTweets){
+                        for(let likedTweet of mainUser.likedTweets){
+                            if((likedTweet).toString() === (replyOfUser._id).toString())
+                                isLikedNew = true
+                        }
+                    }
+                    let isLiked = (isLikedNew)? "true" : "false";
+
+                    //Check if its retweeted by the main user
+             
+                    let isRetweetedNew = false;
+                    if(mainUser.retweetedTweets){
+                        for(let retweetedTweetReply of mainUser.retweetedTweets){
+                            if((retweetedTweetReply).toString() === (replyOfUser._id).toString())
+                                isRetweetedNew = true
+                        }
+                    }
+                
+                    let isRetweeted = (!isRetweetedNew)? "false" : "true";
+
+                    //Check if it's bookmarked by the mainUser
+                    let isBookmarked = "false";
+                    
+                    if(mainUser.bookMarkedTweets){
+                        for(let tweetBookmarked of mainUser.bookMarkedTweets){
+                            if((tweetBookmarked).toString() === (replyOfUser._id).toString())
+                                isBookmarked = "true"
+                        }
+                    }
+
                     //Adding data that will be sent using json file
                     let data = {
                         key: i,
@@ -1104,17 +1252,21 @@ exports.getReplies = async(req, res) =>{
                         updatedAt: replyOfUser.updatedAt,
                         taggedUsers: taggedUsernames,
                         media: replyOfUser.media,
-                        replies: replyOfUser.replies,
-                        retweeters: replyOfUser.retweeters,
-                        favoriters: replyOfUser.favoriters,
-                        isReply: replyOfUser.isReply
+                        repliesCount: (replyOfUser.replies)?replyOfUser.replies.length:0,
+                        retweetersCount: (replyOfUser.retweeters)?replyOfUser.retweeters.length:0,
+                        favoritersCount: (replyOfUser.favoriters)?replyOfUser.favoriters.length:0,
+                        isReply: replyOfUser.isReply,
+                        hashtags: replyOfUser.hashtags,
+                        isLikedByUser: isLiked,
+                        isRetweetedByUser: isRetweeted,
+                        isBookmarkedByUser: isBookmarked
                     }
                     //Pushing data to the array
                     dataUsers.push(data);
                 }
             }
         }
-        return res.status(200).json({message: "Success", users: dataUsers, count: replies.length}); 
+        return res.status(200).json({message: "Success", Replies: dataUsers, count: replies.length}); 
     }
     catch (err) {
         console.log(err)
@@ -1143,16 +1295,22 @@ exports.getNotifications = async(req, res) =>{
                 if(mainNotification && mainNotification.createdAt <= date){
                     let mainActivity = await activity.findById(mainNotification.activity);
            
+                    let mainTweetNotification;
+                    if(mainActivity.tweet){
+                        mainTweetNotification = await tweet.findById(mainActivity.tweet);
+                    }
+                    let senderUser = await user.findById(mainActivity.sender);
                     let obj = {
                         notificationId : mainNotification._id,
-                        sender: (await user.findById(mainActivity.sender)).username,
+                        sender: (senderUser).username,
+                        imageSender: senderUser.image,
                         receiver:(await user.findById( mainActivity.receiver)).username,
                         activity: mainActivity.activityType,
                         tweetId: mainActivity.tweet,
                         mainString: mainNotification.notificationStream,
                         createdAt:  mainNotification.createdAt,
-                        status: mainNotification.status
-        
+                        status: mainNotification.status,
+                        tweetBody: (mainTweetNotification)? mainTweetNotification.body:""
                     }
                     if((await user.findById(mainActivity.sender)).username !== (await user.findById( mainActivity.receiver)).username){
                         if( mainNotification.status)
@@ -1617,7 +1775,9 @@ exports.getTweetById = async(req, res)=>{
             thirdChoiceStats: thirdChoiceStats*100,
             fourthChoice: fourthChoice,
             fourthChoiceStats: fourthChoiceStats*100,
-            hashtags: mainTweet.hashtags
+            hashtags: mainTweet.hashtags,
+            isReply: mainTweet.isReply,
+            isQuoteRetweet: mainTweet.isQuoteRetweet
 
         }
         return res.status(200).json({message: "Success", tweetData: data})
