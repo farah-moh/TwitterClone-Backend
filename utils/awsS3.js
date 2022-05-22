@@ -42,7 +42,7 @@ class aws {
     const multerOptions = { storage: this.multerStorage };
     if (options) Object.assign(multerOptions, options);
     else {
-      multerOptions.limits = { fields: 1, fileSize: 10e9, files: 1, parts: 2 };
+      multerOptions.limits = { fields: 1, fileSize: 10e9, files: 4, parts: 2 };
     }
     this.upload = multer(multerOptions);
   }

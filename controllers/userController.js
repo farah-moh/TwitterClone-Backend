@@ -12,6 +12,9 @@ const { promisify } = require('util');
 const sendEmail = require('./../utils/email_info');
 const {  _infoTransformers } = require('passport/lib');
 const authentication = require('./authentication');
+const uploadAWSImage = require('../utils/uploadIMG');
+const uploadIMG = require('../utils/uploadIMG');
+require('./../utils/awsS3');
 
 /**
  * @description - Takes user ID and and returns its info
@@ -263,10 +266,21 @@ exports.getEditProfile = catchAsync(async (req, res, next) => {
  * @returns {Object} - The user object to edit
  */
 const editProfileFunc = async (userId, newInfo,imgData) => {
-
-    const editedUser = await user.findByIdAndUpdate(userId, {newInfo,imgData}, {
-        new: true
-      });
+    let editedUser = await user.findById(userId);
+    if(imgData){
+        const imgObjects = await uploadIMG(
+            imgData,
+            'user',
+            userId
+        );
+        editedUser.image = imgObjects;
+        await editedUser.save();
+    }
+    else {
+        editedUser = await user.findByIdAndUpdate(userId, newInfo, {
+            new: true
+        });
+    }
     if (!editedUser) throw new AppError('No user with this id', 404);
     return editedUser;
 };
