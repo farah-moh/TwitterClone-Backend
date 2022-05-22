@@ -129,6 +129,175 @@ exports.postTweet = async(req, res)=>{
 
 }
 
+
+const getTweetUsingId = async(tweetId, userId)=>{
+    let mainTweet  = await tweet.findById(tweetId);
+    
+    
+    if(!mainTweet){
+        throw new AppError('No tweet with this id', 500);
+    }
+    let getTweetUser = await user.findById(userId);
+    if(!getTweetUser){
+        throw new AppError('No tweet with this id', 500);
+    }
+
+    let mainUser = await user.findById(mainTweet.user.toString());
+
+    let isLikedNew = false;
+    if(getTweetUser.likedTweets){
+        for(let likedTweet of getTweetUser.likedTweets){
+            if((likedTweet).toString() === (mainTweet._id).toString())
+                isLikedNew = true
+        }
+    }
+    let isLiked = (isLikedNew)? "true" : "false";
+
+    //Check if its retweeted by the main user
+
+    let isRetweetedNew = false;
+    if(getTweetUser.retweetedTweets){
+        for(let retweetedTweet of getTweetUser.retweetedTweets){
+            if((retweetedTweet).toString() === (mainTweet._id).toString())
+                isRetweetedNew = true
+        }
+    }
+
+    let isRetweeted = (!isRetweetedNew)? "false" : "true";
+
+    //Check if it's bookmarked by the mainUser
+    let isBookmarked = false;
+    
+    if(getTweetUser.bookMarkedTweets){
+        for(let tweetBookmarked of getTweetUser.bookMarkedTweets){
+            if((tweetBookmarked).toString() === (mainTweet._id).toString())
+                isBookmarked = true
+        }
+    }
+
+    
+
+    //Checking if there is a pooll
+    let poll = (mainTweet.poll)? "true" : "false";
+    let firstChoice = "";
+    let firstChoiceStats = 0;
+    let secondChoice = "";
+    let secondChoiceStats = 0;
+    let thirdChoice = "";
+    let thirdChoiceStats = 0;
+    let fourthChoice = "";
+    let fourthChoiceStats = 0;
+    //Calculating the stats
+    
+    let pollChoice = -1;
+    let newPoll;
+    if(mainTweet.poll){
+        let sum = 0;
+        newPoll = await polls.findById(mainTweet.poll)
+        if(newPoll.choice1){
+            sum += newPoll.choice1Statistics.length;
+            firstChoice = newPoll.choice1;
+            for(let userVote of newPoll.choice1Statistics){
+                if(getTweetUser._id.toString() === userVote._id.toString)
+                    pollChoice = 1;
+            }
+        }
+        if(newPoll.choice2){
+            sum += newPoll.choice2Statistics.length;
+            secondChoice =newPoll.choice2;
+            if(pollChoice === -1){
+                for(let userVote of newPoll.choice2Statistics){
+                    if(getTweetUser._id.toString() === userVote._id.toString)
+                        pollChoice = 2;
+                }
+            }
+        }
+        if(newPoll.choice3){
+            sum += newPoll.choice3Statistics.length;
+            thirdChoice = newPoll.choice3;
+            if(pollChoice === -1){
+                for(let userVote of newPoll.choice3Statistics){
+                    if(getTweetUser._id.toString() === userVote._id.toString)
+                        pollChoice = 3;
+                }
+            }
+        }
+        if(newPoll.choice4){
+            sum +=newPoll.choice4Statistics.length;
+            fourthChoice = newPoll.choice4;
+            if(pollChoice === -1){
+                for(let userVote of newPoll.choice4Statistics){
+                    if(getTweetUser._id.toString() === userVote._id.toString)
+                        pollChoice = 4;
+                }
+            }
+        }
+        if(newPoll.choice1 && sum!=0)
+            firstChoiceStats = (newPoll.choice1Statistics.length)/sum
+        if(newPoll.choice2 && sum!=0)
+            secondChoiceStats = (newPoll.choice2Statistics.length)/sum
+        if(newPoll.choice3 && sum!=0)
+            thirdChoiceStats = (newPoll.choice3Statistics.length)/sum
+        if(newPoll.choice4 && sum!=0)
+            fourthChoiceStats = (newPoll.choice4Statistics.length)/sum
+
+    }
+
+    // writing the json file hat will be sent
+    let usernamesTagged = []
+    if(mainTweet.taggedUsers){
+        for(let i of mainTweet.taggedUsers ){
+            let userTagged = await user.findById(i)
+            if(userTagged){
+                usernamesTagged.push(userTagged.username);
+            }
+        }
+    } 
+    let data = {
+        key:mainTweet._id,
+        username: (mainUser).username,
+        name: (mainUser).name,
+        email: (mainUser).email,
+        userImage: (mainUser).image,
+        tweetBody: mainTweet.body,
+        tweetMedia: mainTweet.media,
+        repliesCount: (mainTweet.replies)? (mainTweet.replies).length: 0, 
+        retweetersCount: (mainTweet.retweeters)?(mainTweet.retweeters).length : 0,
+        favoritersCount: (mainTweet.favoriters)? (mainTweet.favoriters).length : 0,
+        createdAt: mainTweet.createdAt,
+        taggedUsers: usernamesTagged,
+        isLikedByUser: isLiked,
+        isRetweetedByUser: isRetweeted,
+        isBookmarkedByUser: isBookmarked,
+        poll: poll,
+        firstChoice: firstChoice,
+        firstChoiceStats: firstChoiceStats*100,
+        numberOfVoters1: (newPoll)?newPoll.choice1Statistics.length:0,
+        secondChoice: secondChoice,
+        secondChoiceStats: secondChoiceStats*100,
+        numberOfVoters2: newPoll?newPoll.choice2Statistics.length:0,
+        thirdChoice: thirdChoice,
+        thirdChoiceStats: thirdChoiceStats*100,
+        numberOfVoters3: newPoll?newPoll.choice3Statistics.length:0,
+        fourthChoice: fourthChoice,
+        fourthChoiceStats: fourthChoiceStats*100,
+        numberOfVoters4: newPoll?newPoll.choice4Statistics.length:0,
+        userVotedOn: pollChoice,
+        hashtags: mainTweet.hashtags,
+        isReply: mainTweet.isReply,
+        isQuoteRetweet: mainTweet.isQuoteRetweet,
+        idOfTweetQuoted: (mainTweet.isQuoteRetweet)?mainTweet.idOfQuotedTweet:"",
+        isRetweet: false
+        
+    }
+    //pushing it to the array.
+    return data;
+}
+           
+       
+
+
+
 /**
  * @description This function is used to get the tweets of the user & his following list by using the token saved in the header
  * @param {*} req 
@@ -146,12 +315,13 @@ exports.getTweets = async(req, res)=>{
 
         //the user requested
         let getTweetUser = mainUser;
-        let retweetsSent = [];
+      
        
         if(!mainUser)
             return res.status(500).json({error:"There is no user with this id!"});
         //Getting all tweets of the mainUser
         let tweets = mainUser.tweets;
+
         // adding the tweets of following list in the array of tweets 
         if(mainUser.following){
    
@@ -163,18 +333,22 @@ exports.getTweets = async(req, res)=>{
                 if(userFollowed.quotedRetweets && userFollowed.quotedRetweets.length!=0)
                     tweets = tweets.concat(userFollowed.quotedRetweets);
 
-                    if(followedUser.retweetedTweets){
-                        for(let retweetMainUser of followedUser.retweetedTweets){
+
+                  
+                    if(userFollowed.retweetedTweets){
+                        for(let retweetMainUser of userFollowed.retweetedTweets){
                             let retweetActivity = await retweet.findOne({tweet: retweetMainUser, retweeter: followedUser._id })
-                            let data = {
-                                tweetId: retweetMainUser,
-                                username: followedUser.username,
-                                image: followedUser.image,
-                                name: followedUser.name,
-                                createdAt: (retweetActivity)? retweetActivity.createdAt:new Date(2022/3/1),
-                                isRetweet: true
+                            let retweetOfUser = await tweet.findById(retweetMainUser)
+                            if(retweetOfUser){
+                                let dataOfRetweet = await getTweetUsingId(retweetMainUser,userId);
+                                let data  = dataOfRetweet
+                                data.usernameRetweeter= mainUser.username,
+                                data.imageRetweeter= mainUser.image,
+                                data.nameRetweeter= mainUser.name,
+                                data.createdAt= (retweetActivity)? retweetActivity.createdAt:new Date(2022/3/1),
+                                data.isRetweet= true
+                                dataSent.push(data);
                             }
-                            retweetsSent.push(data);
                             
                         }
                     }
@@ -187,15 +361,18 @@ exports.getTweets = async(req, res)=>{
         if(mainUser.retweetedTweets){
             for(let retweetMainUser of mainUser.retweetedTweets){
                 let retweetActivity = await retweet.findOne({tweet: retweetMainUser, retweeter: mainUser._id })
-                let data = {
-                    tweetId: retweetMainUser,
-                    username: mainUser.username,
-                    image: mainUser.image,
-                    name: mainUser.name,
-                    createdAt: (retweetActivity)? retweetActivity.createdAt:new Date(2022/3/1),
-                    isRetweet: true
+
+                let retweetOfUser = await tweet.findById(retweetMainUser)
+                if(retweetOfUser){
+                    let dataOfRetweet = await getTweetUsingId(retweetMainUser,userId);
+                    let data  = dataOfRetweet
+                    data.usernameRetweeter= mainUser.username,
+                    data.imageRetweeter= mainUser.image,
+                    data.nameRetweeter= mainUser.name,
+                    data.createdAt= (retweetActivity)? retweetActivity.createdAt:new Date(2022/3/1),
+                    data.isRetweet= true
+                    dataSent.push(data);
                 }
-                retweetsSent.push(data);
                 
             }
         }
@@ -210,154 +387,7 @@ exports.getTweets = async(req, res)=>{
                     mainUser = await user.findById(mainTweet.user)
                     //Creating objects that will be sent in json file
                     
-                    //Check if it's liked by the main user 
-                   
-                    let isLikedNew = false;
-                    if(getTweetUser.likedTweets){
-                        for(let likedTweet of getTweetUser.likedTweets){
-                            if((likedTweet).toString() === (mainTweet._id).toString())
-                                isLikedNew = true
-                        }
-                    }
-                    let isLiked = (isLikedNew)? "true" : "false";
-
-                    //Check if its retweeted by the main user
-             
-                    let isRetweetedNew = false;
-                    if(getTweetUser.retweetedTweets){
-                        for(let retweetedTweet of getTweetUser.retweetedTweets){
-                            if((retweetedTweet).toString() === (mainTweet._id).toString())
-                                isRetweetedNew = true
-                        }
-                    }
-                
-                    let isRetweeted = (!isRetweetedNew)? "false" : "true";
-
-                    //Check if it's bookmarked by the mainUser
-                    let isBookmarked = false;
-                    
-                    if(getTweetUser.bookMarkedTweets){
-                        for(let tweetBookmarked of getTweetUser.bookMarkedTweets){
-                            if((tweetBookmarked).toString() === (mainTweet._id).toString())
-                                isBookmarked = true
-                        }
-                    }
-
-                    
-
-                    //Checking if there is a pooll
-                    let poll = (mainTweet.poll)? "true" : "false";
-                    let firstChoice = "";
-                    let firstChoiceStats = 0;
-                    let secondChoice = "";
-                    let secondChoiceStats = 0;
-                    let thirdChoice = "";
-                    let thirdChoiceStats = 0;
-                    let fourthChoice = "";
-                    let fourthChoiceStats = 0;
-                    //Calculating the stats
-                    
-                    let pollChoice = -1;
-                    let newPoll;
-                    if(mainTweet.poll){
-                        let sum = 0;
-                        newPoll = await polls.findById(mainTweet.poll)
-                        if(newPoll.choice1){
-                            sum += newPoll.choice1Statistics.length;
-                            firstChoice = newPoll.choice1;
-                            for(let userVote of newPoll.choice1Statistics){
-                                if(getTweetUser._id.toString() === userVote._id.toString)
-                                    pollChoice = 1;
-                            }
-                        }
-                        if(newPoll.choice2){
-                            sum += newPoll.choice2Statistics.length;
-                            secondChoice =newPoll.choice2;
-                            if(pollChoice === -1){
-                                for(let userVote of newPoll.choice2Statistics){
-                                    if(getTweetUser._id.toString() === userVote._id.toString)
-                                        pollChoice = 2;
-                                }
-                            }
-                        }
-                        if(newPoll.choice3){
-                            sum += newPoll.choice3Statistics.length;
-                            thirdChoice = newPoll.choice3;
-                            if(pollChoice === -1){
-                                for(let userVote of newPoll.choice3Statistics){
-                                    if(getTweetUser._id.toString() === userVote._id.toString)
-                                        pollChoice = 3;
-                                }
-                            }
-                        }
-                        if(newPoll.choice4){
-                            sum +=newPoll.choice4Statistics.length;
-                            fourthChoice = newPoll.choice4;
-                            if(pollChoice === -1){
-                                for(let userVote of newPoll.choice4Statistics){
-                                    if(getTweetUser._id.toString() === userVote._id.toString)
-                                        pollChoice = 4;
-                                }
-                            }
-                        }
-                        if(newPoll.choice1 && sum!=0)
-                            firstChoiceStats = (newPoll.choice1Statistics.length)/sum
-                        if(newPoll.choice2 && sum!=0)
-                            secondChoiceStats = (newPoll.choice2Statistics.length)/sum
-                        if(newPoll.choice3 && sum!=0)
-                            thirdChoiceStats = (newPoll.choice3Statistics.length)/sum
-                        if(newPoll.choice4 && sum!=0)
-                            fourthChoiceStats = (newPoll.choice4Statistics.length)/sum
-
-                    }
-
-                    // writing the json file hat will be sent
-                    let usernamesTagged = []
-                    if(mainTweet.taggedUsers){
-                        for(let i of mainTweet.taggedUsers ){
-                            let userTagged = await user.findById(i)
-                            if(userTagged){
-                                usernamesTagged.push(userTagged.username);
-                            }
-                        }
-                    } 
-                    let data = {
-                        key:mainTweet._id,
-                        username: (mainUser).username,
-                        name: (mainUser).name,
-                        email: (mainUser).email,
-                        userImage: (mainUser).image,
-                        tweetBody: mainTweet.body,
-                        tweetMedia: mainTweet.media,
-                        repliesCount: (mainTweet.replies)? (mainTweet.replies).length: 0, 
-                        retweetersCount: (mainTweet.retweeters)?(mainTweet.retweeters).length : 0,
-                        favoritersCount: (mainTweet.favoriters)? (mainTweet.favoriters).length : 0,
-                        createdAt: mainTweet.createdAt,
-                        taggedUsers: usernamesTagged,
-                        isLikedByUser: isLiked,
-                        isRetweetedByUser: isRetweeted,
-                        isBookmarkedByUser: isBookmarked,
-                        poll: poll,
-                        firstChoice: firstChoice,
-                        firstChoiceStats: firstChoiceStats*100,
-                        numberOfVoters1: (newPoll)?newPoll.choice1Statistics.length:0,
-                        secondChoice: secondChoice,
-                        secondChoiceStats: secondChoiceStats*100,
-                        numberOfVoters2: newPoll?newPoll.choice2Statistics.length:0,
-                        thirdChoice: thirdChoice,
-                        thirdChoiceStats: thirdChoiceStats*100,
-                        numberOfVoters3: newPoll?newPoll.choice3Statistics.length:0,
-                        fourthChoice: fourthChoice,
-                        fourthChoiceStats: fourthChoiceStats*100,
-                        numberOfVoters4: newPoll?newPoll.choice4Statistics.length:0,
-                        userVotedOn: pollChoice,
-                        hashtags: mainTweet.hashtags,
-                        isReply: mainTweet.isReply,
-                        isQuoteRetweet: mainTweet.isQuoteRetweet,
-                        idOfTweetQuoted: (mainTweet.isQuoteRetweet)?mainTweet.idOfQuotedTweet:"",
-                        isRetweet: false
-                        
-                    }
+                    let data = await getTweetUsingId(i, userId);
                     //pushing it to the array.
                     dataSent.push(data);
                 }
@@ -375,7 +405,7 @@ exports.getTweets = async(req, res)=>{
             })
         }  
         //3ayzeen retweets terga3?
-        return res.status(200).json({data: sortedArray, succes: "true", userImage: getTweetUser.image, isAdmin: getTweetUser.isAdmin, userName: getTweetUser.username,name:getTweetUser.name, retweetsSent: retweetsSent});
+        return res.status(200).json({data: sortedArray, succes: "true", userImage: getTweetUser.image, isAdmin: getTweetUser.isAdmin, userName: getTweetUser.username,name:getTweetUser.name});
     }
     catch (err) {
         console.log(err)
@@ -1664,122 +1694,8 @@ exports.getTweetById = async(req, res)=>{
     try{
         let mainTweet = await tweet.findById(tweetId)
         if(!mainTweet)
-            return res.status(404).json({ error: 'tweet not found' });
-        let userPostedTweet = await user.findById(mainTweet.user);
-        
-        let getTweetUser = await user.findById(userId)
-        let liked = [];
-                //Check if it's liked by the main user 
-                
-        if(mainTweet.favoriters)
-            liked = (mainTweet.favoriters).filter(async (entry)=>{
-                return (entry.toString() === getTweetUser._id.toString())
-            });
-            
-        let isLiked = (liked.length == 0)? "false" : "true";
-
-        //Check if its retweeted by the main user
-        let retweeted = [];
-        if(mainTweet.retweeted)
-            retweeted = (mainTweet.retweeted).filter(async (entry)=>{
-        
-                return (entry.toString() === getTweetUser._id.toString())
-            });
-        let isRetweeted = (retweeted.length == 0)? "false" : "true";
-
-        //Check if it's bookmarked by the mainUser
-        let isBookmarked = false;
-        
-        if(getTweetUser.bookMarkedTweets){
-            for(let tweetBookmarked of getTweetUser.bookMarkedTweets){
-                if((tweetBookmarked).toString() === (mainTweet._id).toString())
-                    isBookmarked = true
-            }
-        }
-
-        
-        //Checking if there is a pooll
-        let pollTweet = (mainTweet.poll)? "true" : "false";
-        let firstChoice = "";
-        let firstChoiceStats = 0;
-        let secondChoice = "";
-        let secondChoiceStats = 0;
-        let thirdChoice = "";
-        let thirdChoiceStats = 0;
-        let fourthChoice = "";
-        let fourthChoiceStats = 0;
-        //Calculating the stats
-        if(mainTweet.poll){
-            let sum = 0;
-            let newPoll = await polls.findById(mainTweet.poll)
-            if(newPoll.choice1){
-                sum += newPoll.choice1Statistics.length;
-                firstChoice = newPoll.choice1;
-            }
-            if(newPoll.choice2){
-                sum += newPoll.choice2Statistics.length;
-                secondChoice =newPoll.choice2;
-            }
-            if(newPoll.choice3){
-                sum += newPoll.choice3Statistics.length;
-                thirdChoice = newPoll.choice3;
-            }
-            if(newPoll.choice4){
-                sum +=newPoll.choice4Statistics.length;
-                fourthChoice = newPoll.choice4;
-            }
-            if(newPoll.choice1 && sum!=0)
-                firstChoiceStats = (newPoll.choice1Statistics.length)/sum
-            if(newPoll.choice2 && sum!=0)
-                secondChoiceStats = (newPoll.choice2Statistics.length)/sum
-            if(newPoll.choice3 && sum!=0)
-                thirdChoiceStats = (newPoll.choice3Statistics.length)/sum
-            if(newPoll.choice4 && sum!=0)
-                fourthChoiceStats = (newPoll.choice4Statistics.length)/sum
-
-        }
-
-        // writing the json file hat will be sent
-        let usernamesTagged = []
-        if(mainTweet.taggedUsers){
-            for(let i of mainTweet.taggedUsers ){
-                let userTagged = await user.findById(i)
-                if(userTagged){
-                    usernamesTagged.push(userTagged.username);
-                }
-            }
-        } 
-
-        let data = {
-            username: (userPostedTweet).username,
-            name: (userPostedTweet).name,
-            email: (userPostedTweet).email,
-            userImage: (userPostedTweet).image,
-            tweetBody: mainTweet.body,
-            tweetMedia: mainTweet.media,
-            repliesCount: (mainTweet.replies)? (mainTweet.replies).length: 0, 
-            retweetersCount: (mainTweet.retweeters)?(mainTweet.retweeters).length : 0,
-            favoritersCount: (mainTweet.favoriters)? (mainTweet.favoriters).length : 0,
-            createdAt: mainTweet.createdAt,
-            taggedUsers: usernamesTagged,
-            isLikedByUser: isLiked,
-            isRetweetedByUser: isRetweeted,
-            isBookmarkedByUser: isBookmarked,
-            isAdmin: userPostedTweet.isAdmin,
-            poll: pollTweet,
-            firstChoice: firstChoice,
-            firstChoiceStats: firstChoiceStats*100,
-            secondChoice: secondChoice,
-            secondChoiceStats: secondChoiceStats*100,
-            thirdChoice: thirdChoice,
-            thirdChoiceStats: thirdChoiceStats*100,
-            fourthChoice: fourthChoice,
-            fourthChoiceStats: fourthChoiceStats*100,
-            hashtags: mainTweet.hashtags,
-            isReply: mainTweet.isReply,
-            isQuoteRetweet: mainTweet.isQuoteRetweet
-
-        }
+            return res.status(404).json({ error: 'Tweet not found' });
+        let data =await getTweetUsingId(tweetId, userId);
         return res.status(200).json({message: "Success", tweetData: data})
 
     }
