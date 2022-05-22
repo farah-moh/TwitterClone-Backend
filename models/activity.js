@@ -33,8 +33,7 @@ const activitySchema = new Schema({
 
     tweet: {
         type: Schema.ObjectId,
-        ref: 'tweet',
-        default: ''
+        ref: 'tweet'
     },
 
 },

@@ -12,6 +12,8 @@ const { promisify } = require('util');
 const sendEmail = require('./../utils/email_info');
 const {  _infoTransformers } = require('passport/lib');
 const authentication = require('./authentication');
+const notifications = require('../models/notifications');
+const activity = require('../models/activity');
 
 /**
  * @description - Takes user ID and and returns its info
@@ -347,8 +349,30 @@ exports.reportProfile = catchAsync(async (req, res, next) => {
           });
     }
     const notMe = await user.findById(notMeId);
+    const me = await user.findById(meId);
+    let isProtected= notMe.protectedTweets;
+
+    let activityUser = new activity({
+        sender: me,
+        receiver: notMe,
+        activityType: "follow"
+    })
+    await activityUser.save()
+    //creating the notification using the activity created above
+    let notification = new notifications({
+        activity: activityUser,
+        notificationStream: isProtected?`${me.username} has requested to follow you`: `${me.username} is now following you`
+    })
+   //  //updating the date
+
+    await notification.save();
+
+    //pushing the notification to the array of the tagged user
+    notMe.notificationsArray.push(notification._id)
+    notMe.notificationFlag = true;
+
+
     if(notMe.protectedTweets) {
-        const me = await user.findById(meId);
         if(notMe.followRequests.indexOf(meId)!==-1)
         {
             return res.status(200).json({
@@ -362,12 +386,12 @@ exports.reportProfile = catchAsync(async (req, res, next) => {
           });
     }
     await follow.create({follower:meId, following: notMeId});
-    const me = await user.findById(meId);
     me.following.push(notMeId.toString());
     notMe.followers.push(meId.toString());
 
     await me.save();
     await notMe.save();
+
 
     res.status(200).json({
         status: 'success',
@@ -459,14 +483,8 @@ exports.getFollowRequests = catchAsync(async (req, res, next) => {
     const usersArr = [];
     for (let i=0;i<requests.length;i++)
     {
-        const requested = await user.findOne({_id: requests[i]});
+        const requested = await user.findOne({_id: requests[i]}).select('name username image');
         usersArr.push(requested);
-    }
-    if (usersArr.length===0)
-    {
-       return res.status(404).json({
-            status: 'No follow requests'
-        }); 
     }
     res.status(200).json({
         status: 'success ',

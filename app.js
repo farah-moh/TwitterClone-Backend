@@ -37,7 +37,7 @@ app.use('/settings', settingsRoute);
 app.use('/admin', adminRoute);
 app.use('/explore', exploreRoute);
 app.use('/:username',userRoute)
-app.use('/messages/:receiver_id', messagesRoute);
+app.use('/messages/:receiver_username', messagesRoute);
 
 app.all('*', (req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404))

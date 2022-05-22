@@ -5,31 +5,29 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
 
-const createMessage= async (body,receiverId)=> {
+const createMessage= async (senderId,body,receiverId)=> {
     const newMessage= await message.create({
     text: body.text,
     media: body.media,
-    sender: body.sender,
+    sender: senderId,
     receiver: receiverId,
     createdAt: body.createdAt
 });
 return newMessage;
 }
 
-const loadChat= async (body,receiverId)=> {
+const loadChat= async (senderId,receiverId)=> {
     
      const chat= await message.find({
      $or:[
-     {sender: body.sender,
+     {sender: senderId,
       receiver: receiverId},
      {sender: receiverId,
-      receiver: body.sender}
+      receiver: senderId}
      ]
      });
 return chat;
 }
-
-//TODO: Create notification
 
 
 exports.sendMessage= catchAsync(async (req, res, next) => {
@@ -41,12 +39,12 @@ exports.sendMessage= catchAsync(async (req, res, next) => {
     }
 
     try {
-        const receiver = await user.findById(req.params.receiver_id);
+        const receiver = await user.findOne({username: req.params.receiver_username});
         if (!receiver) {
             return next(new AppError('User not found', 404));
         }
 
-    const newMessage= await createMessage(req.body,req.params.receiver_id);
+    const newMessage= await createMessage(req.user.id,req.body,receiver.id);
     res.status(200).json({status: 'Success', success: true});
     await newMessage.save();
     }
@@ -60,13 +58,13 @@ exports.sendMessage= catchAsync(async (req, res, next) => {
 exports.chat= catchAsync(async (req, res, next) => {
     
     try {
-        const receiver = await user.findById(req.params.receiver_id);
+        const receiver = await user.findOne({username: req.params.receiver_username});
         if (!receiver) {
             return next(new AppError('User not found', 404));
         }
         
-    const chat= await loadChat(req.body, req.params.receiver_id);
-    res.status(200).json({status: 'Success', success: true, chat});
+    const chat= await loadChat(req.user.id, receiver.id);
+    res.status(200).json({status: 'Success', success: true, chat, receiverName: receiver.id, receiverImage: receiver.image});
     }
 
     catch (err) {
@@ -76,6 +74,6 @@ exports.chat= catchAsync(async (req, res, next) => {
 });
 
 exports.deleteMessage= catchAsync(async (req, res, next) => {
-    await message.findByIdAndRemove ( req.body._id);
+    await message.findByIdAndRemove(req.body._id);
     res.status(200).json({status: 'Success', success: true});
 });
