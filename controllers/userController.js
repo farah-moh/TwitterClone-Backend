@@ -20,6 +20,12 @@ const authentication = require('./authentication');
  * @returns {Object} User object
  */
 const getProfile = async (userId,type) => {
+    const sortByDate = arr => {
+        const sorter = (a, b) => {
+           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+        arr.sort(sorter);
+    };
     const userProfile = await user.findById(userId);
     const followingCount = userProfile.following.length;
     const followersCount = userProfile.followers.length;
@@ -33,7 +39,7 @@ const getProfile = async (userId,type) => {
     let userTweets = await tweet.find({_id: {$in: allTweets}});
     let likedTweets = await tweet.find({_id: {$in: likes}});
     let mediaTweets = userTweets.filter(x => x.media.length > 0);
-    //console.log(likedTweets);
+
     tempTweets = [];
     userTweets.forEach(function (element) {
         toReturn = {...element};
@@ -50,9 +56,11 @@ const getProfile = async (userId,type) => {
         delete tempObj.user; 
         returnedUser["tweets"].push(tempObj);
     }
-
+    sortByDate(returnedUser["tweets"]);
+    
     if(type==='profile') {
         noReplies = returnedUser["tweets"].filter(x => x.isReply===false || x.username!==userProfile.username);
+        sortByDate(noReplies);
         returnedUser["tweets"] = noReplies;
     }
     //needs testing
@@ -63,7 +71,8 @@ const getProfile = async (userId,type) => {
             tempObj = { username:userProfile.username, name:userProfile.name, image:userProfile.image, ...toReturn._doc};
             delete tempObj.user; 
             tempMedia.push(tempObj);
-        });       
+        });     
+        sortByDate(tempMedia);  
         returnedUser["tweets"] = tempMedia;
     }
     else if(type==='likes') {
@@ -76,6 +85,7 @@ const getProfile = async (userId,type) => {
             delete tempObj.user; 
             tempLikes.push(tempObj);
           }
+        sortByDate(tempLikes);
         returnedUser["likes"] = tempLikes;
         delete returnedUser.tweets;
     }
