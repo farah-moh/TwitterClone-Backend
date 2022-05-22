@@ -32,6 +32,7 @@ const getProfile = async (userId,type) => {
     let retweets = await tweet.find({_id: {$in: allRetweets}});
     let userTweets = await tweet.find({_id: {$in: allTweets}});
     let likedTweets = await tweet.find({_id: {$in: likes}});
+    let mediaTweets = userTweets.filter(x => x.media.length > 0);
     //console.log(likedTweets);
     tempTweets = [];
     userTweets.forEach(function (element) {
@@ -42,43 +43,40 @@ const getProfile = async (userId,type) => {
     });
     returnedUser["tweets"] = tempTweets;
 
-    retweets.forEach(async (element) => {
-        let tweep = await user.findById(element.user);
+    for (const element of retweets) {
+        let tweep =  await user.findById(element.user).select('username name image');
         toReturn = {...element};
         tempObj = { username:tweep.username, name:tweep.name, image:tweep.image, ...toReturn._doc};
         delete tempObj.user; 
         returnedUser["tweets"].push(tempObj);
-    });
+    }
 
     if(type==='profile') {
-
         noReplies = returnedUser["tweets"].filter(x => x.isReply===false || x.username!==userProfile.username);
         returnedUser["tweets"] = noReplies;
     }
     //needs testing
     else if(type==='media') {
-        let imageTweet = returnedUser.tweets.find(x=> x.media.length > 0);
-        let images = [];
-        for(let tweet in imageTweet) {
-            for(let image of tweet.media) {
-                images.push(image);
-            }
-        }
-        returnedUser["media"] = images;
-        delete returnedUser.tweets;
+        tempMedia = [];
+        mediaTweets.forEach(function (element) {
+            toReturn = {...element};
+            tempObj = { username:userProfile.username, name:userProfile.name, image:userProfile.image, ...toReturn._doc};
+            delete tempObj.user; 
+            tempMedia.push(tempObj);
+        });       
+        returnedUser["tweets"] = tempMedia;
     }
     else if(type==='likes') {
         tempLikes = [];
-        returnedUser["likes"] = [];
-        likedTweets.forEach(function (element)  {
-            let tweep =  user.findById(element.user).select('username name image');
+        for (const element of likedTweets) {
+            let tweep =  await user.findById(element.user).select('username name image');
+            console.log(tweep);
             toReturn = {...element};
             tempObj = { username:tweep.username, name:tweep.name, image:tweep.image, ...toReturn._doc};
             delete tempObj.user; 
             tempLikes.push(tempObj);
-            returnedUser["likes"] = returnedUser["likes"].concat(tempLikes);
-        });
-        returnedUser["likes"].push(tempLikes);
+          }
+        returnedUser["likes"] = tempLikes;
         delete returnedUser.tweets;
     }
     returnedUser["followingCount"] = followingCount;
