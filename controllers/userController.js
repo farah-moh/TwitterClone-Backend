@@ -48,7 +48,11 @@ const getProfile = async (userId,type) => {
     tempTweets = [];
     userTweets.forEach(function (element) {
         toReturn = {...element};
-        tempObj = { username:userProfile.username, name:userProfile.name, image:userProfile.image, ...toReturn._doc};
+        didIRetweet = allRetweets.filter(x => x._id.toString() === element._id.toString());
+        didIRetweet = didIRetweet.length? true:false;
+        didILike = likes.filter(x => x._id.toString() === element._id.toString());
+        didILike = didILike.length? true:false;
+        tempObj = { username:userProfile.username, name:userProfile.name, image:userProfile.image, ...toReturn._doc, isLikedByMe: didILike, isRetweetedByMe: didIRetweet};
         delete tempObj.user; 
         tempTweets.push(tempObj);
     });
@@ -57,7 +61,11 @@ const getProfile = async (userId,type) => {
     for (const element of retweets) {
         let tweep =  await user.findById(element.user).select('username name image');
         toReturn = {...element};
-        tempObj = { username:tweep.username, name:tweep.name, image:tweep.image, ...toReturn._doc};
+        didIRetweet = allRetweets.filter(x => x._id.toString() === element._id.toString());
+        didIRetweet = didIRetweet.length? true:false;
+        didILike = likes.filter(x => x._id.toString() === element._id.toString());
+        didILike = didILike.length? true:false;
+        tempObj = { username:tweep.username, name:tweep.name, image:tweep.image, ...toReturn._doc, isLikedByMe: didILike, isRetweetedByMe: didIRetweet};
         delete tempObj.user; 
         returnedUser["tweets"].push(tempObj);
     }
@@ -73,7 +81,11 @@ const getProfile = async (userId,type) => {
         tempMedia = [];
         mediaTweets.forEach(function (element) {
             toReturn = {...element};
-            tempObj = { username:userProfile.username, name:userProfile.name, image:userProfile.image, ...toReturn._doc};
+            didIRetweet = allRetweets.filter(x => x._id.toString() === element._id.toString());
+            didIRetweet = didIRetweet.length? true:false;
+            didILike = likes.filter(x => x._id.toString() === element._id.toString());
+            didILike = didILike.length? true:false;
+            tempObj = { username:userProfile.username, name:userProfile.name, image:userProfile.image, ...toReturn._doc, isLikedByMe: didILike, isRetweetedByMe: didIRetweet};
             delete tempObj.user; 
             tempMedia.push(tempObj);
         });     
@@ -86,7 +98,11 @@ const getProfile = async (userId,type) => {
             let tweep =  await user.findById(element.user).select('username name image');
             console.log(tweep);
             toReturn = {...element};
-            tempObj = { username:tweep.username, name:tweep.name, image:tweep.image, ...toReturn._doc};
+            didIRetweet = allRetweets.filter(x => x._id.toString() === element._id.toString());
+            didIRetweet = didIRetweet.length? true:false;
+            didILike = likes.filter(x => x._id.toString() === element._id.toString());
+            didILike = didILike.length? true:false;
+            tempObj = { username:tweep.username, name:tweep.name, image:tweep.image, ...toReturn._doc, isLikedByMe: didILike, isRetweetedByMe: didIRetweet};
             delete tempObj.user; 
             tempLikes.push(tempObj);
           }
@@ -141,18 +157,23 @@ const getUser = async (notMeId,meId,type)  => {
     let iAmAdmin = await user.findById(meId).select('isAdmin');
     iAmAdmin = iAmAdmin.isAdmin;
     
-    
+    let requests = await user.findById(notMeId).select('followRequests');
+    requests = requests.followRequests;
+    requests = requests.filter(x => x.toString() === meId);
+
     let followsMe = followsMeProp.length? true:false;
     let followHim = mutuals.length? true:false;
+    let followRequest = requests.length? true:false;
     notMe["followsMe"] = followsMe;
     notMe["followHim"] = followHim;
+    notMe["pending"] = followRequest;
     
     //if private user & I don't follow him, don't send tweets
     if(isProtected && !mutuals.length && !iAmAdmin) {
         //removing tweets from returnedUser
         returnedUser = 
-        (({ username, name, birthdate, followingCount, followersCount, followsMe, followHim, protectedTweets,country,city,bio,website,image,createdAt}) => 
-        ({ username, name, birthdate,followingCount, followersCount, followsMe, followHim, protectedTweets,country,city,bio,website,image,createdAt}))(notMe);
+        (({ username, name, birthdate, followingCount, followersCount, followsMe, followHim, pending, protectedTweets,country,city,bio,website,image,createdAt}) => 
+        ({ username, name, birthdate,followingCount, followersCount, followsMe, followHim, pending, protectedTweets,country,city,bio,website,image,createdAt}))(notMe);
         //returnedUser = await notMe.select('-tweets');
     }
     else {
@@ -278,11 +299,9 @@ const editProfileFunc = async (userId, newInfo,imgData) => {
         editedUser.image = imgObjects;
         await editedUser.save();
     }
-    else {
-        editedUser = await user.findByIdAndUpdate(userId, newInfo, {
+    editedUser = await user.findByIdAndUpdate(userId, newInfo, {
             new: true
-        });
-    }
+    });
     if (!editedUser) throw new AppError('No user with this id', 404);
     return editedUser;
 };
@@ -290,7 +309,9 @@ exports.editProfileFunc = editProfileFunc;
 
 
 exports.editProfile = catchAsync(async (req, res, next) => {
-    const editedUser = await editProfileFunc(req.user._id, req.body, req.files.image.data);
+    let  editedUser;
+    if(req.files) editedUser = await editProfileFunc(req.user._id, req.body, req.files.image.data);
+    else editedUser = await editProfileFunc(req.user._id, req.body, null);
     res.status(200).json(editedUser);
   });
 
