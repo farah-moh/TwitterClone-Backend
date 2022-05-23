@@ -7,6 +7,7 @@ const activity = require('../models/activity');
 const { findById } = require('../models/user');
 const poll = require('../models/poll');
 const retweet = require('../models/retweet');
+const uploadIMG = require('../utils/uploadIMG');
 
 /**
  * @description This function is used to post a tweet and save it in the database
@@ -19,6 +20,8 @@ exports.postTweet = async(req, res)=>{
     //poll(true/false)
     const {body, media, taggedUsers, postedAt, hashtags, poll, firstChoice, secondChoice, thirdChoice, fourthChoice} = req.body;
     const userId =req.user.id;
+    //const mediaUploaded = req.files.image.data;
+
 
     //Checking if there is something to post.
     if(!body && !media && !taggedUsers && !hashtags){
@@ -56,6 +59,7 @@ exports.postTweet = async(req, res)=>{
             createTweet.taggedUsers = ids;
         } 
             
+        
         //Adding media
         if (media)
             createTweet.media = media;
@@ -83,6 +87,18 @@ exports.postTweet = async(req, res)=>{
         }
         //Saving tweet to database
         await createTweet.save();
+
+
+
+        // if(mediaUploaded){
+        //     const imgObjects = await uploadIMG(
+        //         mediaUploaded,
+        //         'tweet',
+        //         createTweet._id
+        //     );
+        //     createTweet.media = imgObjects;
+        //     await createTweet.save();
+        // }
         //Adding tweet to the user tweets array
         let userPosted = await user.findById(userId);
         userPosted.tweets.push(createTweet);
@@ -128,6 +144,20 @@ exports.postTweet = async(req, res)=>{
     }
 
 }
+
+
+
+const isFollowing = async(mainUser, id)=>{
+    if(mainUser.following){
+        for(let oneUser of mainUser.following){
+            if(oneUser.toString() == id.toString())
+                return true;
+        }
+    }
+    return false;
+}
+       
+
 
 
 const getTweetUsingId = async(tweetId, userId)=>{
@@ -242,6 +272,8 @@ const getTweetUsingId = async(tweetId, userId)=>{
             fourthChoiceStats = (newPoll.choice4Statistics.length)/sum
 
     }
+    let isFollowingg = await isFollowing(getTweetUser, mainTweet.user)
+
 
     // writing the json file hat will be sent
     let usernamesTagged = []
@@ -287,14 +319,18 @@ const getTweetUsingId = async(tweetId, userId)=>{
         isReply: mainTweet.isReply,
         isQuoteRetweet: mainTweet.isQuoteRetweet,
         idOfTweetQuoted: (mainTweet.isQuoteRetweet)?mainTweet.idOfQuotedTweet:"",
-        isRetweet: false
+        isRetweet: false,
+        isFollowing: isFollowingg
         
     }
     //pushing it to the array.
     return data;
 }
-           
-       
+          
+
+
+
+
 
 
 
@@ -322,6 +358,8 @@ exports.getTweets = async(req, res)=>{
         //Getting all tweets of the mainUser
         let tweets = mainUser.tweets;
 
+
+
         // adding the tweets of following list in the array of tweets 
         if(mainUser.following){
    
@@ -342,9 +380,9 @@ exports.getTweets = async(req, res)=>{
                             if(retweetOfUser){
                                 let dataOfRetweet = await getTweetUsingId(retweetMainUser,userId);
                                 let data  = dataOfRetweet
-                                data.usernameRetweeter= mainUser.username,
-                                data.imageRetweeter= mainUser.image,
-                                data.nameRetweeter= mainUser.name,
+                                data.usernameRetweeter= userFollowed.username,
+                                data.imageRetweeter= userFollowed.image,
+                                data.nameRetweeter= userFollowed.name,
                                 data.createdAt= (retweetActivity)? retweetActivity.createdAt:new Date(2022/3/1),
                                 data.isRetweet= true
                                 dataSent.push(data);
@@ -763,6 +801,7 @@ const makeRetweetFunc = async(tweetId, userId, msg)=>{
     const {body,  media, taggedUsers, hashtags} = req.body;
     const tweetId = req.params.tweetId;
     const userId =req.user.id;
+    //const mediaUploaded = req.files.image.data;
 
     //Checking on the content of the comment
     if(!body&& !media && !taggedUsers && !hashtags){
@@ -815,6 +854,17 @@ const makeRetweetFunc = async(tweetId, userId, msg)=>{
         await replier.save();
         await createdTweet.save();
         //Then we have to find the tweet the user is trying to reply on it
+
+        // if(mediaUploaded){
+        //     const imgObjects = await uploadIMG(
+        //         mediaUploaded,
+        //         'tweet',
+        //         createdTweet._id
+        //     );
+        //     createdTweet.media = imgObjects;
+        //     await createdTweet.save();
+        // }
+        //Add
         
 
         // sending notification to the tagged users
@@ -887,6 +937,7 @@ const makeRetweetFunc = async(tweetId, userId, msg)=>{
     const {body,  media, taggedUsers, hashtags} = req.body;
     const tweetId = req.params.tweetId;
     const userId =req.user.id;
+    //const mediaUploaded = req.files.image.data;
 
     
     //Checking on the content of the quoteRetweet
@@ -939,6 +990,17 @@ const makeRetweetFunc = async(tweetId, userId, msg)=>{
 
         createdTweet.idOfQuotedTweet = tweetId;
         await createdTweet.save();
+
+
+        // if(mediaUploaded){
+        //     const imgObjects = await uploadIMG(
+        //         mediaUploaded,
+        //         'tweet',
+        //         createdTweet._id
+        //     );
+        //     createdTweet.media = imgObjects;
+        //     await createdTweet.save();
+        // }
 
 
         if(taggedUsers){
