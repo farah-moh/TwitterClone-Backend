@@ -24,7 +24,7 @@ require('./../utils/awsS3');
  * @param {string} type - The type of the page
  * @returns {Object} User object
  */
-const getProfile = async (userId,type) => {
+const getProfile = async (userId, meId, type) => {
     const sortByDate = arr => {
         const sorter = (a, b) => {
            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -32,11 +32,15 @@ const getProfile = async (userId,type) => {
         arr.sort(sorter);
     };
     const userProfile = await user.findById(userId);
+    const myProfile = await user.findById(meId);
     const followingCount = userProfile.following.length;
     const followersCount = userProfile.followers.length;
     const likes = userProfile.likedTweets;
     const allTweets = userProfile.tweets;
     const allRetweets = userProfile.retweetedTweets;
+    const myRetweets = myProfile.retweetedTweets;
+    const myLikes = myProfile.likedTweets;
+    const myBookmarks = myProfile.bookMarkedTweets;
 
     const returnedUser = (({ username, name, followingCount,followersCount, birthdate, tweets, protectedTweets,country,city,bio,website,image,createdAt}) => ({ username, name, followingCount,followersCount, birthdate, tweets, protectedTweets,country,city,bio,website,image,createdAt}))(userProfile);
     
@@ -48,11 +52,13 @@ const getProfile = async (userId,type) => {
     tempTweets = [];
     userTweets.forEach(function (element) {
         toReturn = {...element};
-        didIRetweet = allRetweets.filter(x => x._id.toString() === element._id.toString());
+        didIRetweet = myRetweets.filter(x => x._id.toString() === element._id.toString());
         didIRetweet = didIRetweet.length? true:false;
-        didILike = likes.filter(x => x._id.toString() === element._id.toString());
+        didILike = myLikes.filter(x => x._id.toString() === element._id.toString());
         didILike = didILike.length? true:false;
-        tempObj = { username:userProfile.username, name:userProfile.name, image:userProfile.image, ...toReturn._doc, isLikedByMe: didILike, isRetweetedByMe: didIRetweet};
+        didIBookmark = myBookmarks.filter(x => x._id.toString() === element._id.toString());
+        didIBookmark = didIBookmark.length? true:false;
+        tempObj = { username:userProfile.username, name:userProfile.name, image:userProfile.image, ...toReturn._doc, isLikedByMe: didILike, isRetweetedByMe: didIRetweet, isBookmarkedByMe: didIBookmark};
         delete tempObj.user; 
         tempTweets.push(tempObj);
     });
@@ -61,11 +67,13 @@ const getProfile = async (userId,type) => {
     for (const element of retweets) {
         let tweep =  await user.findById(element.user).select('username name image');
         toReturn = {...element};
-        didIRetweet = allRetweets.filter(x => x._id.toString() === element._id.toString());
+        didIRetweet = myRetweets.filter(x => x._id.toString() === element._id.toString());
         didIRetweet = didIRetweet.length? true:false;
-        didILike = likes.filter(x => x._id.toString() === element._id.toString());
+        didILike = myLikes.filter(x => x._id.toString() === element._id.toString());
         didILike = didILike.length? true:false;
-        tempObj = { username:tweep.username, name:tweep.name, image:tweep.image, ...toReturn._doc, isLikedByMe: didILike, isRetweetedByMe: didIRetweet};
+        didIBookmark = myBookmarks.filter(x => x._id.toString() === element._id.toString());
+        didIBookmark = didIBookmark.length? true:false;
+        tempObj = { username:tweep.username, name:tweep.name, image:tweep.image, ...toReturn._doc, isLikedByMe: didILike, isRetweetedByMe: didIRetweet, isBookmarkedByMe: didIBookmark};
         delete tempObj.user; 
         returnedUser["tweets"].push(tempObj);
     }
@@ -81,11 +89,13 @@ const getProfile = async (userId,type) => {
         tempMedia = [];
         mediaTweets.forEach(function (element) {
             toReturn = {...element};
-            didIRetweet = allRetweets.filter(x => x._id.toString() === element._id.toString());
+            didIRetweet = myRetweets.filter(x => x._id.toString() === element._id.toString());
             didIRetweet = didIRetweet.length? true:false;
-            didILike = likes.filter(x => x._id.toString() === element._id.toString());
+            didILike = myLikes.filter(x => x._id.toString() === element._id.toString());
             didILike = didILike.length? true:false;
-            tempObj = { username:userProfile.username, name:userProfile.name, image:userProfile.image, ...toReturn._doc, isLikedByMe: didILike, isRetweetedByMe: didIRetweet};
+            didIBookmark = myBookmarks.filter(x => x._id.toString() === element._id.toString());
+            didIBookmark = didIBookmark.length? true:false;
+            tempObj = { username:userProfile.username, name:userProfile.name, image:userProfile.image, ...toReturn._doc, isLikedByMe: didILike, isRetweetedByMe: didIRetweet, isBookmarkedByMe: didIBookmark};
             delete tempObj.user; 
             tempMedia.push(tempObj);
         });     
@@ -98,11 +108,13 @@ const getProfile = async (userId,type) => {
             let tweep =  await user.findById(element.user).select('username name image');
             console.log(tweep);
             toReturn = {...element};
-            didIRetweet = allRetweets.filter(x => x._id.toString() === element._id.toString());
+            didIRetweet = myRetweets.filter(x => x._id.toString() === element._id.toString());
             didIRetweet = didIRetweet.length? true:false;
-            didILike = likes.filter(x => x._id.toString() === element._id.toString());
+            didILike = myLikes.filter(x => x._id.toString() === element._id.toString());
             didILike = didILike.length? true:false;
-            tempObj = { username:tweep.username, name:tweep.name, image:tweep.image, ...toReturn._doc, isLikedByMe: didILike, isRetweetedByMe: didIRetweet};
+            didIBookmark = myBookmarks.filter(x => x._id.toString() === element._id.toString());
+            didIBookmark = didIBookmark.length? true:false;
+            tempObj = { username:tweep.username, name:tweep.name, image:tweep.image, ...toReturn._doc, isLikedByMe: didILike, isRetweetedByMe: didIRetweet, isBookmarkedByMe: didIBookmark};
             delete tempObj.user; 
             tempLikes.push(tempObj);
           }
@@ -139,7 +151,7 @@ const getProfile = async (userId,type) => {
 const getUser = async (notMeId,meId,type)  => {
 
     //getting profile
-    let notMe = await getProfile(notMeId,type);
+    let notMe = await getProfile(notMeId,meId,type);
 
     //checking if I am following user
     let mutuals = await user.findById(meId).select('following');
@@ -188,8 +200,8 @@ const getUser = async (notMeId,meId,type)  => {
  * @param {object} type - The type of the page
  * @returns {object} - The user object
  */
-const getMe = async (meId,type) => {
-    const me = await getProfile(meId,type);
+const getMe = async (sentUserId,meId,type) => {
+    const me = await getProfile(sentUserId,meId,type);
     me["isMe"] = true;
     return me;
 };
@@ -216,7 +228,7 @@ const preGetProfile = async (sentUsername,meId, type, next) => {
     let currentUser;
     //checking if I am visiting my profile, or another user's profile
     if(me === sentUsername) {
-        currentUser = await getMe(meId,type);
+        currentUser = await getMe(sentUserId,meId,type);
     }
     else {
         currentUser = await getUser(sentUserId,meId,type);
@@ -475,10 +487,12 @@ exports.getFollowers = catchAsync(async (req, res, next) => {
     followers = await user.find({_id: {$in: followers}}).select('username name bio protectedTweets image');
     let myFollowers = me.followers;
     let myFollowing = me.following;
+    let requests = who.followRequests;
 
     followers = followers.map(obj => ({ ...obj._doc, 
         followsMe: (myFollowers.includes(obj._id))? true:false,
         followsHim: (myFollowing.includes(obj._id))? true:false,
+        pending: (requests.includes(meId))? true:false,
         isMe: (meId.toString() === obj._id.toString())? true:false,
      }));
 
@@ -495,16 +509,29 @@ exports.getFollowing = catchAsync(async (req, res, next) => {
     who = await user.findOne({username: who});
     let me = await user.findById(meId);
     let whoID = who._id;
+    let requests = who.followRequests;
 
     let following = who.following;
-    following = await user.find({_id: {$in: following}}).select('username name bio protectedTweets image');
+    following = await user.find({_id: {$in: following}}).select('_id username name bio protectedTweets image');
     let myFollowers = me.followers;
     let myFollowing = me.following;
+
+    for (const element of following) {
+        let requests =  await user.findById(element._id).select('followRequests');
+        requests = requests.followRequests;
+        console.log(requests);
+        let pending = (requests.includes(meId))? true:false;
+        element["pending"] = pending;
+        console.log(element);
+    }
     following = following.map(obj => ({ ...obj._doc, 
         followsMe: (myFollowers.includes(obj._id))? true:false,
         followsHim: (myFollowing.includes(obj._id))? true:false,
+        pending: (requests.includes(meId.toString()))? true:false,
         isMe: (meId.toString() === obj._id.toString())? true:false,
+        pending: obj.pending
      }))
+     
 
     res.status(200).json({
         status: 'success',
