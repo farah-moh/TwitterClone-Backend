@@ -42,7 +42,7 @@ const getProfile = async (userId, meId, type) => {
     const myLikes = myProfile.likedTweets;
     const myBookmarks = myProfile.bookMarkedTweets;
 
-    const returnedUser = (({ username, name, followingCount,followersCount, birthdate, tweets, protectedTweets,country,city,bio,website,image,createdAt}) => ({ username, name, followingCount,followersCount, birthdate, tweets, protectedTweets,country,city,bio,website,image,createdAt}))(userProfile);
+    const returnedUser = (({ username, name, followingCount,followersCount, birthdate, tweets, protectedTweets,country,city,bio,website,image,headerImage,createdAt}) => ({ username, name, followingCount,followersCount, birthdate, tweets, protectedTweets,country,city,bio,website,image,headerImage,createdAt}))(userProfile);
     
     let retweets = await tweet.find({_id: {$in: allRetweets}});
     let userTweets = await tweet.find({_id: {$in: allTweets}});
@@ -184,8 +184,8 @@ const getUser = async (notMeId,meId,type)  => {
     if(isProtected && !mutuals.length && !iAmAdmin) {
         //removing tweets from returnedUser
         returnedUser = 
-        (({ username, name, birthdate, followingCount, followersCount, followsMe, followHim, pending, protectedTweets,country,city,bio,website,image,createdAt}) => 
-        ({ username, name, birthdate,followingCount, followersCount, followsMe, followHim, pending, protectedTweets,country,city,bio,website,image,createdAt}))(notMe);
+        (({ username, name, birthdate, followingCount, followersCount, followsMe, followHim, pending, protectedTweets,country,city,bio,website,image,headerImage,createdAt}) => 
+        ({ username, name, birthdate,followingCount, followersCount, followsMe, followHim, pending, protectedTweets,country,city,bio,website,image,headerImage,createdAt}))(notMe);
         //returnedUser = await notMe.select('-tweets');
     }
     else {

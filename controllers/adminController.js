@@ -58,6 +58,24 @@ const topFiveFollowed = async () => {
     return mapped;
 };
 
+const topTweetsTrend = async () => {
+    let tweets = await tweet.find().select('-_id hashtags');
+    let stats = [];
+    for (const element of tweets) {
+        let hashtags = element.hashtags;
+        for(const element2 of hashtags) {
+            doneBefore = stats.findIndex(x => x.hashtag === element2);
+            if(doneBefore!=-1) {
+                stats[doneBefore].count = stats[doneBefore].count+1;
+            }
+            else stats.push({hashtag: element2, count: 1})
+        }
+    }
+    stats.sort((a, b) => (a.count > b.count ? 1 : -1)).reverse().slice(0,5);
+    console.log(stats);
+    return stats;
+}
+
 const userStatsInfo = async (username) => {
 
     const yesterdayNo = 86400000;
@@ -181,6 +199,7 @@ exports.dashboardStatistics = catchAsync(async (req, res, next) => {
     const topUsersWeek = await topUsersPerWeek();
     const topUsersWeekIncrease = await topUsersPerWeekIncrease();
     const topUsersMonthIncrease = await topUsersPerMonthIncrease();
+    const topTweetsPerTrend = await topTweetsTrend();
     let UserStats = [topUsersWeekIncrease, topUsersMonthIncrease];
 
     res.status(200).json({
@@ -189,6 +208,7 @@ exports.dashboardStatistics = catchAsync(async (req, res, next) => {
         TopFollowers: topFollowed,
         TopLikes: topLiked,
         topUsersPerWeek: topUsersWeek,
+        topTweetsPerTrend: topTweetsPerTrend,
         UserStats: UserStats
     });
 });
