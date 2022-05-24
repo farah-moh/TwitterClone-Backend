@@ -13,7 +13,7 @@ passport.use(
             try {
                 const { _json: profileInfo } = profile;
                 // Check if user signed up before using facebook
-                const userExists = await User.findOne({ facebookId: profile.id })
+                const userExists = await User.findOne({ facebookID: profile.id })
             
                 if (userExists) {
                   return done(null, userExists)
@@ -41,7 +41,7 @@ passport.use(
                     username: random_username,
                     email: profileInfo.email,
                     birthdate: profileInfo.birthday,
-                    facebookId: profile.id,
+                    facebookID: profile.id,
                     confirmed: true
                 })
             
