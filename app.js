@@ -3,7 +3,6 @@ const cors = require('cors');
 
 const passport = require('passport');
 
-
 const app = express()
 
 require('dotenv').config();
@@ -36,7 +35,6 @@ const corsOptions = {
   app.enable('trust proxy');
 
 app.use(passport.initialize());
-app.use(passport.session());
 
 app.use('/', authenticationRoute);
 app.use('/search', searchRoute);
