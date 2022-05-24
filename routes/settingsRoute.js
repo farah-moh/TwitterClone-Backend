@@ -16,6 +16,7 @@ router.get('/profile',userController.getEditProfile);
 router.patch('/profile',fileUpload(),userController.editProfile);
 router.patch('/Account-info/Email',settingsController.updateEmail);
 router.patch('/Account-info/Username',settingsController.updateUsername);
+router.patch('/Account-info/Password',settingsController.changePassword);
 router.patch('/Account-info/Protected-tweets',settingsController.protectTweets);
 router.patch('/Notifications',settingsController.pushNotifications);
 router.patch('/Display',settingsController.changeTheme);

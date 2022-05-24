@@ -21,6 +21,18 @@ const userByEmail= async(Email) => {
 }
 exports.userByEmail = userByEmail;
 
+const changePasswordFunc = async (id, password, newPassword) => {
+  const User = await user.findOne({_id: id});
+
+  if (!User) throw new AppError('Invalid User', 400);
+
+  if (!(await User.validatePassword(password, User.password)))
+    throw new AppError('Incorrect password', 401);
+
+  User.password = newPassword;
+  return User;
+};
+exports.changePasswordFunc = changePasswordFunc;
 /**
  * @description This function is used to used to modify the current username
  * @param {*} req 
@@ -216,4 +228,16 @@ exports.deactivateAccount = catchAsync(async (req, res, next) => {
               500
             );
         }
+});
+
+exports.changePassword = catchAsync(async (req, res, next) => {
+  const User = await changePasswordFunc(
+    req.user.id,
+    req.body.password,
+    req.body.newPassword,
+  );
+  await User.save();
+  res.status(200).json({
+    status: 'Success'
+  })
 });
