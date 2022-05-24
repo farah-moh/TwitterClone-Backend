@@ -2,10 +2,12 @@ const express = require('express')
 const cors = require('cors');
 
 const passport = require('passport');
+
+
+const app = express()
 app.use(passport.initialize());
 app.use(passport.session());
 
-const app = express()
 require('dotenv').config();
 app.use(express.json()) 
 const AppError = require('./utils/appError')
