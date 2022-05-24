@@ -1,8 +1,8 @@
 const express = require('express');
 const AppError = require('./../utils/appError');
 const authenticationController = require('./../controllers/authentication');
-const passportConfig = require('../config/passport');
-const passport = require('passport');
+const passport = require('../config/passport');
+
 
 const router = express.Router();
 
