@@ -14,6 +14,10 @@ const searchRoute = require('./routes/searchRoute');
 const adminRoute = require('./routes/adminRoute');
 const exploreRoute = require('./routes/exploreRoute');
 
+const passport = require('passport');
+app.use(passport.initialize());
+app.use(passport.session());
+
 const corsOptions = {
     origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',

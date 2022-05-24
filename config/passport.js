@@ -2,6 +2,7 @@ const passport = require('passport');
 const FacebookTokenStrategy = require('passport-facebook-token');
 const User = require('../models/user');
 const genUsername = require("unique-username-generator");
+require('dotenv').config();
 
 passport.use(
     new FacebookTokenStrategy(
