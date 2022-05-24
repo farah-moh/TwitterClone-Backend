@@ -5,8 +5,6 @@ const passport = require('passport');
 
 
 const app = express()
-app.use(passport.initialize());
-app.use(passport.session());
 
 require('dotenv').config();
 app.use(express.json()) 
@@ -36,6 +34,9 @@ const corsOptions = {
       res.send({ "msg": "This has CORS enabled 🎈" })
       });
   app.enable('trust proxy');
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use('/', authenticationRoute);
 app.use('/search', searchRoute);
