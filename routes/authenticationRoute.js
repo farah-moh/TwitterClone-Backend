@@ -7,7 +7,7 @@ const passport = require('passport');
 const router = express.Router();
 
 router.post('/signup', authenticationController.signUp);
-router.patch('/signup-confirm/:token', authenticationController.signUpConfirmed);
+router.get('/signup-confirm/:token', authenticationController.signUpConfirmed);
 
 router.post('/login', authenticationController.login);
 router.post('/facebook', passport.authenticate('facebook-token', { session: false }), authenticationController.loginWithFacebook)
