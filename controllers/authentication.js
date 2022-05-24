@@ -148,7 +148,7 @@ exports.login = catchAsync(async (req, res, next) => {
   });
 
 exports.loginWithFacebook = catchAsync(async (req, res, next) => {
-    const token = signToken(req.user_id);
+    const token = signToken(req.body.id);
 
     res.status(200).json({
       status: 'Success',
