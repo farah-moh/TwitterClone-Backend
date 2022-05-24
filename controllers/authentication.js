@@ -150,13 +150,13 @@ exports.login = catchAsync(async (req, res, next) => {
 exports.loginWithFacebook = catchAsync(async (req, res, next) => {
     const token = signToken(req.user_id);
 
-    // res.status(200).json({
-    //   status: 'Success',
-    //   success: true,
-    //   expireDate: process.env.JWT_EXPIRE,
-    //   token
-    //   })
-    res.redirect(process.env.FRONTEND_URL)
+    res.status(200).json({
+      status: 'Success',
+      success: true,
+      expireDate: process.env.JWT_EXPIRE,
+      token
+      })
+    // res.redirect(process.env.FRONTEND_URL)
   })
 
 
