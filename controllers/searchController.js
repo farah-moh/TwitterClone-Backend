@@ -7,7 +7,12 @@ const user = require('../models/user');
 const tweet = require('../models/tweet');
 
 // find users by username, name
-
+/**
+ * 
+ * @param {Object} regex - The object that contains the user info in regex form
+ * @param {Object} queryParams - The query parameters sent in the search
+ * @returns {object} - The users searched for
+ */
 const getUsers = async (regex, queryParams) => {
     const features = new ApiFeatures(
         user.find({
@@ -28,7 +33,12 @@ const getUsers = async (regex, queryParams) => {
   };
   
 // find by body
-
+/**
+ * 
+ * @param {Object} regex - The object that contains the tweet info in regex form
+ * @param {Object} queryParams - The query parameters sent in the search
+ * @returns {object} - The tweet searched for
+ */
 const getTweets = async (regex, queryParams) => {
     const features = new ApiFeatures(
       tweet.find({
@@ -42,6 +52,12 @@ const getTweets = async (regex, queryParams) => {
     return await features.query;
 };
 
+/**
+ * 
+ * @param {Object} regex - The object that contains the media of the tweet info in regex form
+ * @param {Object} queryParams - The query parameters sent in the search
+ * @returns {object} - The media of the tweets searched for
+ */
 const getTweetsMedia = async (regex, queryParams) => {
     const features = new ApiFeatures(
       tweet.find({
@@ -56,6 +72,12 @@ const getTweetsMedia = async (regex, queryParams) => {
     return await features.query;
 };
 
+/**
+ * 
+ * @param {Object} regex - The object that contains the latest tweets info in regex form
+ * @param {Object} queryParams - The query parameters sent in the search
+ * @returns {object} - The latest tweets searched for
+ */
 const getTweetsLatest = async (regex, queryParams) => {
     const features = new ApiFeatures(
       tweet.find({

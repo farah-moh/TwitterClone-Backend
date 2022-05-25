@@ -2,6 +2,14 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const { stringify } = require('querystring');
 const Schema = mongoose.Schema;
+/**
+ * The report object
+ * @typedef {object} REPORT
+ * @property {String} message - The report messages
+ * @property {userObject} whoReported - The user who reported
+ * @property {userObject} reported - The user who got reported
+ * @property {enum} type - The number of the report message
+ */
 
 const reportsSchema = new Schema({
     message: { 
