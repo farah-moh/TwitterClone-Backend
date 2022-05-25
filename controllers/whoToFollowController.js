@@ -12,7 +12,7 @@ const suggestedAccounts= async(id)=> {
              {_id: {$nin: User.following}},
              {_id: {$ne: User.id}}
          ]
-    }).select('name username image');
+    }).select('name username image bio');
     return suggested; 
 }
 

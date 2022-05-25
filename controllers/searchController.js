@@ -73,6 +73,14 @@ const getTweetsLatest = async (regex, queryParams) => {
 
 exports.search = catchAsync(async (req, res, next) => {
     const queryString = req.query.q;
+    const meId = req.user.id;
+
+    const myProfile = await user.findById(meId);
+    const myRetweets = myProfile.retweetedTweets;
+    const myLikes = myProfile.likedTweets;
+    const myBookmarks = myProfile.bookMarkedTweets;
+    const myFollowing = myProfile.following;
+
     const types = req.query.f ? req.query.f.split(',') : ['user'];
     let regex;
 
@@ -95,11 +103,38 @@ exports.search = catchAsync(async (req, res, next) => {
       for (const element of response.tweets) {
         let tweep = await user.findById(element.user);
         toReturn = {...element};
-        tempObj = { username:tweep.username, name:tweep.name, image:tweep.image, ...toReturn._doc};
+        didIRetweet = myRetweets.filter(x => x._id.toString() === element._id.toString());
+        didIRetweet = didIRetweet.length? true:false;
+        didILike = myLikes.filter(x => x._id.toString() === element._id.toString());
+        didILike = didILike.length? true:false;
+        didIBookmark = myBookmarks.filter(x => x._id.toString() === element._id.toString());
+        didIBookmark = didIBookmark.length? true:false;
+        isFollow = myFollowing.filter(x => x._id.toString() === element.user.toString());
+        isFollow = isFollow.length? true:false;
+
+        tempObj = { username:tweep.username, name:tweep.name, image:tweep.image, 
+                   isLikedByMe: didILike, isRetweetedByMe: didIRetweet, isBookmarkedByMe: didIBookmark,
+                   followHim: isFollow,
+                   ...toReturn._doc};
+
         delete tempObj.user; 
         tempTweets.push(tempObj);
       }
-    response.tweets = tempTweets;
+      response.tweets = tempTweets;
+    }
+      if(response.users) {
+        let tempUsers = [];
+        for (const element of response.users) {
+          isFollow = myFollowing.filter(x => x._id.toString() === element._id.toString());
+          isFollow = isFollow.length? true:false;
+          toReturn = {...element};
+  
+          tempObj = { ...toReturn._doc, followHim: isFollow};
+  
+          delete tempObj.user; 
+          tempUsers.push(tempObj);
+        }
+    response.users = tempUsers;
     }
   
     res.status(200).json(response);
