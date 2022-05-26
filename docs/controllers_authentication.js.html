@@ -74,7 +74,7 @@ exports.signUp = catchAsync(async (req, res, next) => {
 
     const confirmEmailText = 
     `Click this link to confirm your email\n
-    http://34.236.108.123:3000/signup-confirm/${emailConfirmationToken}\n`;
+    http://localhost:${process.env.PORT}/signup-confirm/${emailConfirmationToken}\n`;
 
     try {
       await sendEmail({
@@ -176,7 +176,7 @@ exports.login = catchAsync(async (req, res, next) => {
   });
 
 exports.loginWithFacebook = catchAsync(async (req, res, next) => {
-    const token = signToken(req.user._id);
+    const token = signToken(req.user_id);
 
     res.status(200).json({
       status: 'Success',
@@ -184,7 +184,6 @@ exports.loginWithFacebook = catchAsync(async (req, res, next) => {
       expireDate: process.env.JWT_EXPIRE,
       token
       })
-    // res.redirect(process.env.FRONTEND_URL)
   })
 
 
@@ -347,47 +346,10 @@ const protectService = async req => {
   req.user = foundUser;
 };
 
-/**
- * @description Protect middleware that checks if the sent token is correct and the user is logged in &amp; is an Admin
- * @param {Object} req Request object.
- */
-
- const protectServiceAdmin = async req => {
-  let token = null;
-  //getting token from header &amp; removing bearer
-  if (req.headers.authorization &amp;&amp; req.headers.authorization.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
-  }
-
-  if (!token) {
-    throw new AppError('You are not logged in! Please log in to access.', 401);
-  }
-
-  //verifying token
-  const verified = await promisify(jwt.verify)(token, process.env.JWT_SECRET) // error handling
-
-  //finding user from token
-  const foundUser = await user.findById(verified.id);
-  
-  if(!foundUser) {
-    throw new AppError('The user belonging to this token no longer exists', 401);
-  }
-  if(!foundUser.isAdmin) {
-    throw new AppError('The user is not an admin', 401);
-  }
-  req.user = foundUser;
-};
-
 exports.protect = catchAsync(async (req, res, next) => {
   await protectService(req);
   next();
 });
-
-exports.protectAdmin = catchAsync(async (req, res, next) => {
-  await protectServiceAdmin(req);
-  next();
-});
-
 </code></pre>
         </article>
     </section>
@@ -398,13 +360,13 @@ exports.protectAdmin = catchAsync(async (req, res, next) => {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#changePasswordFunc">changePasswordFunc</a></li><li><a href="global.html#changeTheme">changeTheme</a></li><li><a href="global.html#createUser">createUser</a></li><li><a href="global.html#editProfileFunc">editProfileFunc</a></li><li><a href="global.html#getEditProfileFunc">getEditProfileFunc</a></li><li><a href="global.html#getLikers">getLikers</a></li><li><a href="global.html#getMe">getMe</a></li><li><a href="global.html#getProfile">getProfile</a></li><li><a href="global.html#getReplies">getReplies</a></li><li><a href="global.html#getRetweetsFunc">getRetweetsFunc</a></li><li><a href="global.html#getTaggedUsers">getTaggedUsers</a></li><li><a href="global.html#getTweets">getTweets</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#likeTweet">likeTweet</a></li><li><a href="global.html#makeReplyFunc">makeReplyFunc</a></li><li><a href="global.html#makeRetweetFunc">makeRetweetFunc</a></li><li><a href="global.html#postTweet">postTweet</a></li><li><a href="global.html#preGetProfile">preGetProfile</a></li><li><a href="global.html#protectService">protectService</a></li><li><a href="global.html#protectServiceAdmin">protectServiceAdmin</a></li><li><a href="global.html#protectTweets">protectTweets</a></li><li><a href="global.html#pushNotifications">pushNotifications</a></li><li><a href="global.html#resetPasswordFunc">resetPasswordFunc</a></li><li><a href="global.html#retweetSchema">retweetSchema</a></li><li><a href="global.html#sendForgotPasswordToken">sendForgotPasswordToken</a></li><li><a href="global.html#topFiveFollowed">topFiveFollowed</a></li><li><a href="global.html#topFiveLiked">topFiveLiked</a></li><li><a href="global.html#topFiveReported">topFiveReported</a></li><li><a href="global.html#topTweetsTrend">topTweetsTrend</a></li><li><a href="global.html#topUsersPerMonthIncrease">topUsersPerMonthIncrease</a></li><li><a href="global.html#topUsersPerWeek">topUsersPerWeek</a></li><li><a href="global.html#topUsersPerWeekIncrease">topUsersPerWeekIncrease</a></li><li><a href="global.html#updateEmail">updateEmail</a></li><li><a href="global.html#updateUsername">updateUsername</a></li><li><a href="global.html#userStatsInfo">userStatsInfo</a></li><li><a href="global.html#validateLogin">validateLogin</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#changePasswordFunc">changePasswordFunc</a></li><li><a href="global.html#changeTheme">changeTheme</a></li><li><a href="global.html#createUser">createUser</a></li><li><a href="global.html#editProfileFunc">editProfileFunc</a></li><li><a href="global.html#getEditProfileFunc">getEditProfileFunc</a></li><li><a href="global.html#getLikers">getLikers</a></li><li><a href="global.html#getMe">getMe</a></li><li><a href="global.html#getProfile">getProfile</a></li><li><a href="global.html#getReplies">getReplies</a></li><li><a href="global.html#getRetweetsFunc">getRetweetsFunc</a></li><li><a href="global.html#getTaggedUsers">getTaggedUsers</a></li><li><a href="global.html#getTweets">getTweets</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#likeTweet">likeTweet</a></li><li><a href="global.html#makeReplyFunc">makeReplyFunc</a></li><li><a href="global.html#makeRetweetFunc">makeRetweetFunc</a></li><li><a href="global.html#postTweet">postTweet</a></li><li><a href="global.html#preGetProfile">preGetProfile</a></li><li><a href="global.html#protectService">protectService</a></li><li><a href="global.html#protectTweets">protectTweets</a></li><li><a href="global.html#pushNotifications">pushNotifications</a></li><li><a href="global.html#resetPasswordFunc">resetPasswordFunc</a></li><li><a href="global.html#sendForgotPasswordToken">sendForgotPasswordToken</a></li><li><a href="global.html#updateEmail">updateEmail</a></li><li><a href="global.html#updateUsername">updateUsername</a></li><li><a href="global.html#validateLogin">validateLogin</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Wed May 25 2022 08:48:50 GMT+0200 (Eastern European Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Wed Apr 27 2022 11:37:47 GMT+0200 (Eastern European Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

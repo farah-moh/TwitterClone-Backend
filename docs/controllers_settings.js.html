@@ -49,18 +49,6 @@ const userByEmail= async(Email) => {
 }
 exports.userByEmail = userByEmail;
 
-const changePasswordFunc = async (id, password, newPassword) => {
-  const User = await user.findOne({_id: id});
-
-  if (!User) throw new AppError('Invalid User', 400);
-
-  if (!(await User.validatePassword(password, User.password)))
-    throw new AppError('Incorrect password', 401);
-
-  User.password = newPassword;
-  return User;
-};
-exports.changePasswordFunc = changePasswordFunc;
 /**
  * @description This function is used to used to modify the current username
  * @param {*} req 
@@ -236,38 +224,6 @@ exports.changeTheme = catchAsync(async (req, res, next) => {
                 500
               );
           }
-});
-
-exports.deactivateAccount = catchAsync(async (req, res, next) => {
-  const User = await userById(req.user.id);
-
-  if(User.deactivated==true)
-  User.deactivated=false;
-  else
-  User.deactivated=true;
-  
-  try {
-      await User.save();
-      return res.status(200).json({status: 'Success', success: true});
-      }
-      catch (err) {
-          throw new AppError(
-              `Something went wrong`,
-              500
-            );
-        }
-});
-
-exports.changePassword = catchAsync(async (req, res, next) => {
-  const User = await changePasswordFunc(
-    req.user.id,
-    req.body.password,
-    req.body.newPassword,
-  );
-  await User.save();
-  res.status(200).json({
-    status: 'Success'
-  })
 });</code></pre>
         </article>
     </section>
@@ -278,13 +234,13 @@ exports.changePassword = catchAsync(async (req, res, next) => {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#changePasswordFunc">changePasswordFunc</a></li><li><a href="global.html#changeTheme">changeTheme</a></li><li><a href="global.html#createUser">createUser</a></li><li><a href="global.html#editProfileFunc">editProfileFunc</a></li><li><a href="global.html#getEditProfileFunc">getEditProfileFunc</a></li><li><a href="global.html#getLikers">getLikers</a></li><li><a href="global.html#getMe">getMe</a></li><li><a href="global.html#getProfile">getProfile</a></li><li><a href="global.html#getReplies">getReplies</a></li><li><a href="global.html#getRetweetsFunc">getRetweetsFunc</a></li><li><a href="global.html#getTaggedUsers">getTaggedUsers</a></li><li><a href="global.html#getTweets">getTweets</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#likeTweet">likeTweet</a></li><li><a href="global.html#makeReplyFunc">makeReplyFunc</a></li><li><a href="global.html#makeRetweetFunc">makeRetweetFunc</a></li><li><a href="global.html#postTweet">postTweet</a></li><li><a href="global.html#preGetProfile">preGetProfile</a></li><li><a href="global.html#protectService">protectService</a></li><li><a href="global.html#protectServiceAdmin">protectServiceAdmin</a></li><li><a href="global.html#protectTweets">protectTweets</a></li><li><a href="global.html#pushNotifications">pushNotifications</a></li><li><a href="global.html#resetPasswordFunc">resetPasswordFunc</a></li><li><a href="global.html#retweetSchema">retweetSchema</a></li><li><a href="global.html#sendForgotPasswordToken">sendForgotPasswordToken</a></li><li><a href="global.html#topFiveFollowed">topFiveFollowed</a></li><li><a href="global.html#topFiveLiked">topFiveLiked</a></li><li><a href="global.html#topFiveReported">topFiveReported</a></li><li><a href="global.html#topTweetsTrend">topTweetsTrend</a></li><li><a href="global.html#topUsersPerMonthIncrease">topUsersPerMonthIncrease</a></li><li><a href="global.html#topUsersPerWeek">topUsersPerWeek</a></li><li><a href="global.html#topUsersPerWeekIncrease">topUsersPerWeekIncrease</a></li><li><a href="global.html#updateEmail">updateEmail</a></li><li><a href="global.html#updateUsername">updateUsername</a></li><li><a href="global.html#userStatsInfo">userStatsInfo</a></li><li><a href="global.html#validateLogin">validateLogin</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#changePasswordFunc">changePasswordFunc</a></li><li><a href="global.html#changeTheme">changeTheme</a></li><li><a href="global.html#createUser">createUser</a></li><li><a href="global.html#editProfileFunc">editProfileFunc</a></li><li><a href="global.html#getEditProfileFunc">getEditProfileFunc</a></li><li><a href="global.html#getLikers">getLikers</a></li><li><a href="global.html#getMe">getMe</a></li><li><a href="global.html#getProfile">getProfile</a></li><li><a href="global.html#getReplies">getReplies</a></li><li><a href="global.html#getRetweetsFunc">getRetweetsFunc</a></li><li><a href="global.html#getTaggedUsers">getTaggedUsers</a></li><li><a href="global.html#getTweets">getTweets</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#likeTweet">likeTweet</a></li><li><a href="global.html#makeReplyFunc">makeReplyFunc</a></li><li><a href="global.html#makeRetweetFunc">makeRetweetFunc</a></li><li><a href="global.html#postTweet">postTweet</a></li><li><a href="global.html#preGetProfile">preGetProfile</a></li><li><a href="global.html#protectService">protectService</a></li><li><a href="global.html#protectTweets">protectTweets</a></li><li><a href="global.html#pushNotifications">pushNotifications</a></li><li><a href="global.html#resetPasswordFunc">resetPasswordFunc</a></li><li><a href="global.html#sendForgotPasswordToken">sendForgotPasswordToken</a></li><li><a href="global.html#updateEmail">updateEmail</a></li><li><a href="global.html#updateUsername">updateUsername</a></li><li><a href="global.html#validateLogin">validateLogin</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Wed May 25 2022 08:48:50 GMT+0200 (Eastern European Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Wed Apr 27 2022 11:37:47 GMT+0200 (Eastern European Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

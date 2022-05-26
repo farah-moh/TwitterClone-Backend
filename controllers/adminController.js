@@ -13,10 +13,7 @@ const { _infoTransformers } = require('passport/lib');
 const authentication = require('./authentication');
 const { findById } = require('../models/user');
 
-/**
- * @description - Returns the top five users who got reported
- * @returns {Object} User object
- */
+
 const topFiveReported = async () => {
     //getting user in route params
     let users = await user.find().select('username reports');
@@ -32,10 +29,7 @@ const topFiveReported = async () => {
     return mapped;
 };
 
-/**
- * @description - Returns the top five liked tweets
- * @returns {Object} User object
- */
+
 const topFiveLiked = async () => {
     //getting user in route params
     let tweets = await tweet.find().select('user favoriters');
@@ -52,10 +46,6 @@ const topFiveLiked = async () => {
     return mapped;
 };
 
-/**
- * @description - Returns the top five users who got followed
- * @returns {Object} User object
- */
 const topFiveFollowed = async () => {
     //getting user in route params
     let users = await user.find().select('username followers');
@@ -68,10 +58,6 @@ const topFiveFollowed = async () => {
     return mapped;
 };
 
-/**
- * @description - Returns the number of the most used hashtags
- * @returns {Integer} number
- */
 const topTweetsTrend = async () => {
     let tweets = await tweet.find().select('-_id hashtags');
     let stats = [];
@@ -90,10 +76,6 @@ const topTweetsTrend = async () => {
     return stats;
 }
 
-/**
- * @param {Object} username - The username of the user to get its stats
- * @returns {Array} The stats of the specific user
- */
 const userStatsInfo = async (username) => {
 
     const yesterdayNo = 86400000;
@@ -127,9 +109,6 @@ const userStatsInfo = async (username) => {
     return AdminUserStatsInfo;
 };
 
-/**
- * @returns {Integer} The rate if users signing up into the website per week
- */
 const topUsersPerWeekIncrease = async () => {
 
     const yesterdayNo = 86400000;
@@ -154,9 +133,6 @@ const topUsersPerWeekIncrease = async () => {
     return UserStats;
 };
 
-/**
- * @returns {Integer} The rate if users signing up into the website per month
- */
 const topUsersPerMonthIncrease = async () => {
 
     const yesterdayNo = 86400000;
@@ -180,9 +156,7 @@ const topUsersPerMonthIncrease = async () => {
 
     return UserStats;
 };
-/**
- * @returns {Array} The number of users that entered the database at each day of the week
- */
+
 const topUsersPerWeek = async () => {
 
     var daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday","Saturday"];
